@@ -13,3 +13,18 @@ C:\Users\Brans\Documents\Visual Studio 2013\Projects\SmartOptimizer\SmartOptimiz
 C:\Users\Brans\Documents\Visual Studio 2013\Projects\SmartOptimizer\SmartOptimizer\bin\Accord.MachineLearning.GPL.xml
 C:\Users\Brans\Documents\Visual Studio 2013\Projects\SmartOptimizer\SmartOptimizer\bin\Accord.Math.xml
 C:\Users\Brans\Documents\Visual Studio 2013\Projects\SmartOptimizer\SmartOptimizer\bin\Accord.Statistics.xml
+M:\optm\SmartOptimizer\SmartOptimizer\bin\Accord.dll.config
+M:\optm\SmartOptimizer\SmartOptimizer\bin\SmartOptimizer.dll.config
+M:\optm\SmartOptimizer\SmartOptimizer\bin\SmartOptimizer.dll
+M:\optm\SmartOptimizer\SmartOptimizer\bin\SmartOptimizer.pdb
+M:\optm\SmartOptimizer\SmartOptimizer\bin\Accord.dll
+M:\optm\SmartOptimizer\SmartOptimizer\bin\Accord.MachineLearning.GPL.dll
+M:\optm\SmartOptimizer\SmartOptimizer\bin\Accord.Math.dll
+M:\optm\SmartOptimizer\SmartOptimizer\bin\Accord.Statistics.dll
+M:\optm\SmartOptimizer\SmartOptimizer\bin\Accord.xml
+M:\optm\SmartOptimizer\SmartOptimizer\bin\Accord.MachineLearning.GPL.xml
+M:\optm\SmartOptimizer\SmartOptimizer\bin\Accord.Math.xml
+M:\optm\SmartOptimizer\SmartOptimizer\bin\Accord.Statistics.xml
+M:\optm\SmartOptimizer\SmartOptimizer\obj\Debug\SmartOptimizer.csprojResolveAssemblyReference.cache
+M:\optm\SmartOptimizer\SmartOptimizer\obj\Debug\SmartOptimizer.dll
+M:\optm\SmartOptimizer\SmartOptimizer\obj\Debug\SmartOptimizer.pdb
