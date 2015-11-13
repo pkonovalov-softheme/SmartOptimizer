@@ -75,7 +75,7 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ABtest.cs" />
+    <Compile Include="AdsSet.cs" />
     <Compile Include="DataProcessor.svc.cs">
       <DependentUpon>DataProcessor.svc</DependentUpon>
     </Compile>
@@ -85,6 +85,8 @@
     <Compile Include="UserPreference.cs" />
     <Compile Include="UserPreferences.cs" />
     <Compile Include="UserSession.cs" />
+    <Compile Include="Util.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -97,6 +99,12 @@
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CoreLib\CoreLib.csproj">
+      <Project>{00414065-e153-4258-9100-0eac7b19a711}</Project>
+      <Name>CoreLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

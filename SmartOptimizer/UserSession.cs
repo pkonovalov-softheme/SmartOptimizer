@@ -7,32 +7,27 @@ namespace SmartOptimizer
 {
     public class UserSession
     {
-        public int CurrentTestedIndex { get; private set; }
-        public Stage Stage { get; private set; }
         public Guid Id { get; private set; }
-        public string FirstHref { get; private set; }
 
         public Dictionary<string, string> UserData { get; private set; }
 
         public Guid UserId { get; private set; }
 
-        public bool IsDefault
-        {
-            get
-            {
-                return FirstHref == null;
-            }
-        }
-        
+        /// <summary>
+        /// Is this user session inside group where we are randomly testing efficiency of ads permutations
+        /// </summary>
+        public bool InBGroup { get; private set; }
 
-        public UserSession(Guid id, Stage stage, Guid userId, Dictionary<string, string> userData, string firstHref = null, int currentTestedIndex = 0)
+        public IList<string> ShowedStartRefs { get; set; }
+
+
+        public UserSession(Guid id, Guid userId, Dictionary<string, string> userData, bool inBGroup, IList<string> showedStartRefs)
         {
-            CurrentTestedIndex = currentTestedIndex;
             UserId = userId;
             UserData = userData;
-            Stage = stage;
-            this.Id = id;
-            this.FirstHref = firstHref;
+            Id = id;
+            InBGroup = inBGroup;
+            ShowedStartRefs = showedStartRefs;
         }
     }
 }

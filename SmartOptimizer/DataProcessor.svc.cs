@@ -28,12 +28,8 @@ namespace SmartOptimizer
         private readonly object _stupidLock = new object();
         private readonly Random _rnd = new Random();
         private readonly List<UserSession> _userSessions = new List<UserSession>(); 
-        private ABtest _baseStageABtest = null;
-        private List<ABtest> _prioritetStageABtests = null;
         private int _currentPriorityIndex = 0;
-
-        private long _intemsTestedInA = 0;
-        private long _intemsClickedInA = 0;
+        private const double GroupBRate = 0.2;
 
         public DataProcessor()
         {
@@ -70,142 +66,68 @@ namespace SmartOptimizer
             {
                 _userSessionCount++;
 
-                if (DoesWeKnowTheUser(userId))
+                switch (_currentStage)
                 {
-                    string[] refClasses = new string[refsList.Count];
+                    case Stage.Base:
 
-                    List<UserPreference> orderedUserPreferences =
-                        _userPreferenceses.Single(userPreferencese => userPreferencese.UserId == userId)
-                            .Preferences.OrderBy(pr => pr.VisitCount)
-                            .ToList();
+                        //if (_baseStageABtest == null)
+                        //{
+                        //    _baseStageABtest = new ABtest(refsList, TargetExampesCount);
+                        //}
 
-                    foreach (var curRef in refsList)
-                    {
-                        string curClass = GetTextClass(curRef);
-                        int targetIndex =
-                            orderedUserPreferences.IndexOf(
-                                orderedUserPreferences.Single(pref => pref.RefClassId == curClass));
-                        refClasses[targetIndex] = curClass;
-                    }
 
-                    return refClasses.ToList();
-                }
-                else
-                {
-                    switch (_currentStage)
-                    {
-                        case Stage.Base:
 
-                            if (_baseStageABtest == null)
-                            {
-                                _baseStageABtest = new ABtest(refsList, TargetExampesCount);
-                            }
+                        return GetDataFromBaseStage(userId, userData, refsList, sessionId);
 
-                            return GetDataFromBaseStage(userId, userData, refsList, sessionId);
+                    case Stage.Prioritets:
 
-                        case Stage.Prioritets:
+                        if (_prioritetStageABtests == null)
+                        {
+                            _prioritetStageABtests = new List<ABtest>();
 
-                            if (_prioritetStageABtests == null)
-                            {
-                                _prioritetStageABtests = new List<ABtest>();
+                            //ToDo: correct
+                            _prioritetStageABtests.Add(new ABtest(refsList, TargetExampesCount));
+                            _prioritetStageABtests.Add(new ABtest(refsList, TargetExampesCount));
 
-                                //ToDo: correct
-                                _prioritetStageABtests.Add(new ABtest(refsList, TargetExampesCount));
-                                _prioritetStageABtests.Add(new ABtest(refsList, TargetExampesCount));
+                        }
 
-                            }
-
-                            return GetDataFromPrioritetStage(userId, userData, refsList, sessionId);
-                    }
+                        return GetDataFromPrioritetStage(userId, userData, refsList, sessionId);
                 }
             }
 
             return refsList;
         }
 
-        public void SetSessionResult(Guid sessionId, string finalNews)
+        public void SetSessionResult(Guid sessionId, string clickedLink)
         {
-            UserSession session = _userSessions.Single(userSession => userSession.Id == sessionId);
+            UserSession session = _userSessions.SingleOrDefault(userSession => userSession.Id == sessionId);
 
-            if (session.IsDefault)
+            if (session == null)
             {
-                if (finalNews != null)
-                {
-                    _intemsClickedInA++;
-                }
-
-                _intemsTestedInA++;
-            }
-            else
-            {
-                if (session.Stage == Stage.Base)
-                {
-                    if (finalNews != null)
-                    {
-                        _baseStageABtest.RefsClicksCountInB[session.FirstHref]++;
-                    }
-
-                    _baseStageABtest.RefsSessionCountInB[session.FirstHref]++;
-                }
-
-                if (session.Stage == Stage.Prioritets)
-                {
-                    //Dictionary<string, string> userData = 
-                    string sex = session.UserData["sex"];
-                    int curIndex = 0;
-
-                    if (sex == "F")
-                    {
-                        curIndex = 1;
-                    }
- 
-
-                    if (finalNews != null)
-                    {
-                        _prioritetStageABtests[curIndex].RefsClicksCountInB[session.FirstHref]++;
-                    }
-
-                    _prioritetStageABtests[curIndex].RefsSessionCountInB[session.FirstHref]++;
-                }
-
+                Trace.TraceWarning("Session with id: {0} not found in the list of started sessions.", sessionId);
+                return;
             }
 
-            if (finalNews != null)
+            if (session.InBGroup)
             {
-                Guid userId = _userSessions.First(us => us.Id == sessionId).UserId;
-
-                string newsClass = GetTextClass(finalNews);
-                _userPreferenceses.Single(pref => pref.UserId == userId).Preferences
-                    .Single(pref => pref.RefClassId == newsClass)
-                    .VisitCount++;
+                
             }
         }
 
-        private List<string> GetDataFromBaseStage(Guid userId, Dictionary<string, string> userData, List<string> refsList, Guid sessionId)
+        private List<string> GetDataFromBaseStage(Guid userId, Dictionary<string, string> userData, IList<string> refsList, Guid sessionId)
         {
-            UserSession curSession;
+            bool isInBgroup = false;
 
             if (ShouldAddUserToBGroup())
             {
-                // B group
-                string firstRef = _baseStageABtest.GetNextRandomHrefToTest();
-                curSession = new UserSession(sessionId, Stage.Base, userId, userData, firstRef);
-                refsList.Remove(firstRef);
-                refsList.Insert(0, firstRef);
-            }
-            else
-            {
-                curSession = new UserSession(sessionId, Stage.Base, userId, userData);
+                refsList.Shuffle();
+                isInBgroup = true;
             }
 
+            var curSession = new UserSession(sessionId, userId, userData, isInBgroup, refsList);
             _userSessions.Add(curSession);
 
-            if (_baseStageABtest.IsComplited)
-            {
-                return _baseStageABtest.GetOrderedHrefs();
-            }
-
-            return refsList;
+            return refsList.ToList();
         }
 
         private List<string> GetDataFromPrioritetStage(Guid userId, Dictionary<string, string> userData,
@@ -243,20 +165,14 @@ namespace SmartOptimizer
             return refsList;
         }
 
+        /// <summary>
+        /// Should we add to group with random permutations where we teach
+        /// </summary>
+        /// <returns></returns>
         private bool ShouldAddUserToBGroup()
         {
-            TimeSpan appropriateTestTime = TimeSpan.FromMinutes(5);
-
-            double sessionsRate = (double)_userSessionCount / _startWatch.Elapsed.Milliseconds;
-
-            // appropriateTestTimeMs * sessionsRate * targetProbabili = targetClickCount
-            double targetProbability = TargetExampesCount / (TargetExampesCount * appropriateTestTime.TotalSeconds * sessionsRate);
-
-            Debug.Assert(targetProbability > 0 && targetProbability < 1, "targetProbability should be between 0 and 1");
-
-            double nextval = _rnd.Next();
-
-            return nextval < targetProbability;
+            double curVal = _rnd.NextDouble();
+            return curVal > GroupBRate;
         }
 
         public CompositeType GetDataUsingDataContract(CompositeType composite)
@@ -274,7 +190,7 @@ namespace SmartOptimizer
 
         private void GetUserType(string userId, Dictionary<string, string> userData)
         {
-            
+
         }
 
         private bool DoesWeKnowTheUser(Guid userId)
