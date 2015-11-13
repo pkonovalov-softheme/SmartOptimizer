@@ -110,7 +110,7 @@ namespace SmartOptimizer
 
             if (session.InBGroup)
             {
-                
+                session.ShowedStartRefs.
             }
         }
 

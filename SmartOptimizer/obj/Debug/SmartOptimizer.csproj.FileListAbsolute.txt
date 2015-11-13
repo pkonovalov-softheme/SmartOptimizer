@@ -28,3 +28,6 @@ M:\optm\SmartOptimizer\SmartOptimizer\bin\Accord.Statistics.xml
 M:\optm\SmartOptimizer\SmartOptimizer\obj\Debug\SmartOptimizer.csprojResolveAssemblyReference.cache
 M:\optm\SmartOptimizer\SmartOptimizer\obj\Debug\SmartOptimizer.dll
 M:\optm\SmartOptimizer\SmartOptimizer\obj\Debug\SmartOptimizer.pdb
+C:\optimizer\SmartOptimizer\SmartOptimizer\obj\Debug\SmartOptimizer.csprojResolveAssemblyReference.cache
+C:\optimizer\SmartOptimizer\SmartOptimizer\obj\Debug\SmartOptimizer.dll
+C:\optimizer\SmartOptimizer\SmartOptimizer\obj\Debug\SmartOptimizer.pdb

@@ -18,16 +18,29 @@ namespace SmartOptimizer
         /// </summary>
         public bool InBGroup { get; private set; }
 
-        public IList<string> ShowedStartRefs { get; set; }
+        public AdsSet SessionAdsSet { get; private set; }
 
+        private string _clickedRef;
 
-        public UserSession(Guid id, Guid userId, Dictionary<string, string> userData, bool inBGroup, IList<string> showedStartRefs)
+        public UserSession(Guid id, Guid userId, 
+            Dictionary<string, string> userData, 
+            bool inBGroup,
+            AdsSet sessionAdsSet)
         {
             UserId = userId;
             UserData = userData;
             Id = id;
             InBGroup = inBGroup;
-            ShowedStartRefs = showedStartRefs;
+            SessionAdsSet = sessionAdsSet;
+        }
+
+        /// <summary>
+        /// Sets session result - sets the ref that was clicked
+        /// </summary>
+        /// <param name="clickedRef"></param>
+        public void SetSessionResult(string clickedRef)
+        {
+            _clickedRef = clickedRef;
         }
     }
 }
