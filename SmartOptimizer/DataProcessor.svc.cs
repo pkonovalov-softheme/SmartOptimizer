@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.ServiceModel.Web;
@@ -19,7 +20,6 @@ namespace SmartOptimizer
             "Gender"
         };
 
-        private const int TargetExampesCount = 1000; // ToDo: calculate it
 
         private readonly Stage _currentStage;
         private List<UserPreferences> _userPreferenceses;
@@ -30,11 +30,14 @@ namespace SmartOptimizer
         private readonly List<UserSession> _userSessions = new List<UserSession>(); 
         private int _currentPriorityIndex = 0;
         private const double GroupBRate = 0.2;
+        private AdsSet _currentAdsSet;
+
 
         public DataProcessor()
         {
             _currentStage = Stage.Base;
             _userPreferenceses = new List<UserPreferences>();
+            _currentAdsSet = new AdsSet(new List<string>());
         }
 
         /*
@@ -81,15 +84,7 @@ namespace SmartOptimizer
 
                     case Stage.Prioritets:
 
-                        if (_prioritetStageABtests == null)
-                        {
-                            _prioritetStageABtests = new List<ABtest>();
 
-                            //ToDo: correct
-                            _prioritetStageABtests.Add(new ABtest(refsList, TargetExampesCount));
-                            _prioritetStageABtests.Add(new ABtest(refsList, TargetExampesCount));
-
-                        }
 
                         return GetDataFromPrioritetStage(userId, userData, refsList, sessionId);
                 }
@@ -100,34 +95,62 @@ namespace SmartOptimizer
 
         public void SetSessionResult(Guid sessionId, string clickedLink)
         {
-            UserSession session = _userSessions.SingleOrDefault(userSession => userSession.Id == sessionId);
-
-            if (session == null)
+            lock (_stupidLock)
             {
-                Trace.TraceWarning("Session with id: {0} not found in the list of started sessions.", sessionId);
-                return;
-            }
+                UserSession session = _userSessions.SingleOrDefault(userSession => userSession.Id == sessionId);
 
-            if (session.InBGroup)
-            {
-                session.ShowedStartRefs.
+                if (session == null)
+                {
+                    Trace.TraceWarning("Session with id: {0} not found in the list of started sessions.", sessionId);
+                    return;
+                }
+
+                    if (session.InBGroup)
+                {
+                    _currentAdsSet.ClickOnRef(clickedLink, session.ShowedRefs);
+                    if (_currentAdsSet.FinishedSessionsInBGroup > _currentAdsSet.GetTargetSamplesForBGroup())
+                    {
+                        _currentAdsSet.BaseRefsList = _currentAdsSet.GetOptimizedRefList();
+                    }
+                }
             }
         }
 
-        private List<string> GetDataFromBaseStage(Guid userId, Dictionary<string, string> userData, IList<string> refsList, Guid sessionId)
+        private void BaseStageObservationFinished()
+        {
+            
+        }
+
+        private List<string> GetDataFromBaseStage(Guid userId, Dictionary<string, string> userData, List<string> refsList, Guid sessionId)
         {
             bool isInBgroup = false;
+            AdsSet set = new AdsSet(refsList);
 
             if (ShouldAddUserToBGroup())
             {
-                refsList.Shuffle();
+                refsList = set.NextRandomShuffle().ToList();
                 isInBgroup = true;
             }
+            else
+            {
+                refsList = set.BaseRefsList;
+            }
 
-            var curSession = new UserSession(sessionId, userId, userData, isInBgroup, refsList);
+            if (set != _currentAdsSet)
+            {
+                _currentAdsSet = set;
+            }
+
+            var curSession = new UserSession(sessionId,
+                 userId,
+                 userData,
+                 isInBgroup,
+                 _currentAdsSet,
+                 refsList);
+
             _userSessions.Add(curSession);
 
-            return refsList.ToList();
+            return refsList;
         }
 
         private List<string> GetDataFromPrioritetStage(Guid userId, Dictionary<string, string> userData,
@@ -186,11 +209,6 @@ namespace SmartOptimizer
                 composite.StringValue += "Suffix";
             }
             return composite;
-        }
-
-        private void GetUserType(string userId, Dictionary<string, string> userData)
-        {
-
         }
 
         private bool DoesWeKnowTheUser(Guid userId)

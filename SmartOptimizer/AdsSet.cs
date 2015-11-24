@@ -8,26 +8,35 @@ namespace SmartOptimizer
 {
     public class AdsSet
     {
-        private readonly List<string> _baseRefsList;
-        //private readonly List<string> _sortedList;
+        private const int TargetSamplesPerAd = 400; //ToDo: calculate
+
+        private readonly List<string> _sortedRefsList;
+
+        //readonly long[] _clikedPositions;
+        //private Dictionary<string, long[]> _showStat = new Dictionary<string, long[]>();
         //private readonly long[] _clicksCount;
 
         Dictionary<string, long> _refCliksStats = new Dictionary<string, long>();
-        private long _totalCliksCount = 0;
+        public long FinishedSessionsInBGroup { get; private set; } = 0;
         private long _totalPermutationsCount = 0;
+        private Random _rnd = new Random();
 
         public AdsSet(List<string> baseRefsList)
         {
-            _baseRefsList = baseRefsList;
+            BaseRefsList = baseRefsList;
 
-            List<string> sortedBaseRefsList = new List<string>(baseRefsList);
-            sortedBaseRefsList.Sort();
+            _sortedRefsList = new List<string>(baseRefsList);
+            _sortedRefsList.Sort();
+            //_clikedPositions = new long[baseRefsList.Count];
+            //_showStat = new Dictionary<string, long[]>();
+            //List<string> sortedBaseRefsList = new List<string>(baseRefsList);
+            //sortedBaseRefsList.Sort();
 
-            _refCliksStats = new Dictionary<string, long>(sortedBaseRefsList.Count);
-            foreach (string curRef in sortedBaseRefsList)
-            {
-                _refCliksStats.Add(curRef, 0);
-            }
+            //_refCliksStats = new Dictionary<string, long>(sortedBaseRefsList.Count);
+            //foreach (string curRef in sortedBaseRefsList)
+            //{
+            //    _refCliksStats.Add(curRef, 0);
+            //}
 
             //_clicksCount = new long[baseRefsList.Count];
         }
@@ -35,7 +44,7 @@ namespace SmartOptimizer
         #region EqualityOpers
         protected bool Equals(AdsSet other)
         {
-            return ReferenceEquals(Sorted, other.Sorted) || this.Sorted.SequenceEqual(other.Sorted);
+            return ReferenceEquals(SortedRefs, other.SortedRefs) || this.SortedRefs.SequenceEqual(other.SortedRefs);
         }
 
         public override bool Equals(object obj)
@@ -48,7 +57,7 @@ namespace SmartOptimizer
 
         public override int GetHashCode()
         {
-            return (_sortedList != null ? _sortedList.GetHashCode() : 0);
+            return (_sortedRefsList != null ? _sortedRefsList.GetHashCode() : 0);
         }
 
         public static bool operator ==(AdsSet left, AdsSet right)
@@ -62,31 +71,42 @@ namespace SmartOptimizer
         }
         #endregion
 
-        public IEnumerable<string> Sorted
+        public List<string> SortedRefs
         {
-            get { return _refCliksStats.Keys; }
+            get { return _sortedRefsList; }
         }
 
-        public List<string> BaseRefsList
-        {
-            get { return _baseRefsList; }
-        }
+        public List<string> BaseRefsList { get; set; }
 
-        public void NextRandomSet()
+        public IEnumerable<string> NextRandomShuffle()
         {
-            _baseRefsList.Shuffle();
+            //_sortedRefsList.Shuffle();
+            IEnumerable<string> result = _sortedRefsList.OrderBy(x => _rnd.Next());
             _totalPermutationsCount++;
+            return result;
         }
 
-        public void ClickOnRef(string clickedRef)
+        public void ClickOnRef(string clickedRef, List<string> showedRefs)
         {
             if (!_refCliksStats.ContainsKey(clickedRef))
             {
-                Trace.TraceWarning("Clicked ref {0} does not exists in the refs dictinary.", clickedRef);
+                Trace.TraceWarning("Clicked ref {0} does not exists in the AdsSet refs dictinary.", clickedRef);
                 return;
             }
 
             _refCliksStats[clickedRef]++;
+            FinishedSessionsInBGroup++;
+            //_clikedPositions[showedRefs.IndexOf(clickedRef)]++;
+        }
+
+        public List<string> GetOptimizedRefList()
+        {
+            return _refCliksStats.OrderBy(de => de.Value).Select(de => de.Key).ToList();
         } 
+
+        public long GetTargetSamplesForBGroup()
+        {
+            return TargetSamplesPerAd * _sortedRefsList.Count;
+        }
     }
 }

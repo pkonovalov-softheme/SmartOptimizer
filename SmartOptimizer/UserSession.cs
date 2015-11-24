@@ -20,12 +20,20 @@ namespace SmartOptimizer
 
         public AdsSet SessionAdsSet { get; private set; }
 
-        private string _clickedRef;
+        public List<string> ShowedRefs
+        {
+            get { return _showedRefs; }
+        }
+
+        //private string _clickedRef;
+        private List<string> _showedRefs; 
+
 
         public UserSession(Guid id, Guid userId, 
             Dictionary<string, string> userData, 
             bool inBGroup,
-            AdsSet sessionAdsSet)
+            AdsSet sessionAdsSet,
+            List<string> showedRefs)
         {
             UserId = userId;
             UserData = userData;
