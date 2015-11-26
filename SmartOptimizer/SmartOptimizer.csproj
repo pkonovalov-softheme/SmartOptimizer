@@ -75,18 +75,11 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AdsSet.cs" />
     <Compile Include="DataProcessor.svc.cs">
       <DependentUpon>DataProcessor.svc</DependentUpon>
     </Compile>
     <Compile Include="IDataProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Stage.cs" />
-    <Compile Include="UserPreference.cs" />
-    <Compile Include="UserPreferences.cs" />
-    <Compile Include="UserSession.cs" />
-    <Compile Include="Util.cs" />
-    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CoreLib</RootNamespace>
     <AssemblyName>CoreLib</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>4cc5584d</NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -52,7 +53,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdsSet.cs" />
     <Compile Include="OptimizationTartget.cs" />
+    <Compile Include="Stage.cs" />
+    <Compile Include="StageOptimizer.cs" />
+    <Compile Include="UserPreference.cs" />
+    <Compile Include="UserPreferences.cs" />
+    <Compile Include="UserSession.cs" />
     <Compile Include="WebSampleSizeCalculator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
