@@ -17,7 +17,7 @@ namespace SmartOptimizer
         //private readonly long[] _clicksCount;
 
         Dictionary<string, long> _refCliksStats = new Dictionary<string, long>();
-        public long FinishedSessionsInBGroup { get; private set; } = 0;
+        public long FinishedSessionsInBGroup { get; private set; }
         private long _totalPermutationsCount = 0;
         private Random _rnd = new Random();
 

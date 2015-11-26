@@ -42,13 +42,13 @@ namespace SmartOptimizer
             SessionAdsSet = sessionAdsSet;
         }
 
-        /// <summary>
-        /// Sets session result - sets the ref that was clicked
-        /// </summary>
-        /// <param name="clickedRef"></param>
-        public void SetSessionResult(string clickedRef)
-        {
-            _clickedRef = clickedRef;
-        }
+        ///// <summary>
+        ///// Sets session result - sets the ref that was clicked
+        ///// </summary>
+        ///// <param name="clickedRef"></param>
+        //public void SetSessionResult(string clickedRef)
+        //{
+        //    _clickedRef = clickedRef;
+        //}
     }
 }
