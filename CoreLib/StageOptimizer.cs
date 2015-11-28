@@ -24,7 +24,7 @@ namespace CoreLib
         private readonly Random _rnd = new Random();
         private readonly List<UserSession> _userSessions = new List<UserSession>(); 
         private int _currentPriorityIndex = 0;
-        private const double GroupBRate = 0.2;
+        private const double GroupBRate = 0.8; //0.2
         private AdsSet _currentAdsSet;
 
 
@@ -100,15 +100,26 @@ namespace CoreLib
                     return;
                 }
 
-                    if (session.InBGroup)
+                if (clickedLink == null)
                 {
-                    _currentAdsSet.ClickOnRef(clickedLink, session.ShowedRefs);
-                    if (_currentAdsSet.FinishedSessionsInBGroup > _currentAdsSet.GetTargetSamplesForBGroup())
+                    Trace.TraceWarning("Session with id: {0} ended with null clickedLink.", sessionId);
+                    if (Debugger.IsAttached)
                     {
-                        _currentAdsSet.BaseRefsList = _currentAdsSet.GetOptimizedRefList();
+                        Debugger.Break();
                     }
+                    return;
+                }
+
+                if (session.InBGroup)
+                {
+                    _currentAdsSet.ClickOnRef(clickedLink);
                 }
             }
+        }
+
+        public List<string> GetBaseBaseRefsList(List<string> refsList)
+        {
+            return _currentAdsSet.BaseRefsList;
         }
 
         private List<string> GetDataFromBaseStage(Guid userId, Dictionary<string, string> userData, List<string> refsList, Guid sessionId)
@@ -185,7 +196,8 @@ namespace CoreLib
         private bool ShouldAddUserToBGroup()
         {
             double curVal = _rnd.NextDouble();
-            return curVal > GroupBRate;
+            bool result = curVal < GroupBRate;
+            return result;
         }
 
         //private bool DoesWeKnowTheUser(Guid userId)

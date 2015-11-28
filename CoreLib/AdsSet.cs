@@ -9,17 +9,12 @@ namespace SmartOptimizer
     public class AdsSet
     {
         private const int TargetSamplesPerAd = 400; //ToDo: calculate
-
         private readonly List<string> _sortedRefsList;
 
-        //readonly long[] _clikedPositions;
-        //private Dictionary<string, long[]> _showStat = new Dictionary<string, long[]>();
-        //private readonly long[] _clicksCount;
-
-        Dictionary<string, long> _refCliksStats = new Dictionary<string, long>();
-        public long FinishedSessionsInBGroup { get; private set; }
-        private long _totalPermutationsCount = 0;
-        private Random _rnd = new Random();
+        readonly Dictionary<string, long> _refCliksStats = new Dictionary<string, long>();
+        private long _finishedSessionsInBGroup;
+        private readonly Random _rnd = new Random();
+        private readonly long _targetSamplesForBGroup;
 
         public AdsSet(List<string> baseRefsList)
         {
@@ -27,18 +22,13 @@ namespace SmartOptimizer
 
             _sortedRefsList = new List<string>(baseRefsList);
             _sortedRefsList.Sort();
-            //_clikedPositions = new long[baseRefsList.Count];
-            //_showStat = new Dictionary<string, long[]>();
-            //List<string> sortedBaseRefsList = new List<string>(baseRefsList);
-            //sortedBaseRefsList.Sort();
 
-            //_refCliksStats = new Dictionary<string, long>(sortedBaseRefsList.Count);
-            //foreach (string curRef in sortedBaseRefsList)
-            //{
-            //    _refCliksStats.Add(curRef, 0);
-            //}
+            foreach (string curRef in _sortedRefsList)
+            {
+                _refCliksStats.Add(curRef, 0);
+            }
 
-            //_clicksCount = new long[baseRefsList.Count];
+            _targetSamplesForBGroup = TargetSamplesPerAd * _sortedRefsList.Count;
         }
 
         #region EqualityOpers
@@ -80,13 +70,11 @@ namespace SmartOptimizer
 
         public IEnumerable<string> NextRandomShuffle()
         {
-            //_sortedRefsList.Shuffle();
             IEnumerable<string> result = _sortedRefsList.OrderBy(x => _rnd.Next());
-            _totalPermutationsCount++;
             return result;
         }
 
-        public void ClickOnRef(string clickedRef, List<string> showedRefs)
+        public void ClickOnRef(string clickedRef)
         {
             if (!_refCliksStats.ContainsKey(clickedRef))
             {
@@ -95,18 +83,28 @@ namespace SmartOptimizer
             }
 
             _refCliksStats[clickedRef]++;
-            FinishedSessionsInBGroup++;
-            //_clikedPositions[showedRefs.IndexOf(clickedRef)]++;
+            _finishedSessionsInBGroup++;
+
+            if (IsRefCompetitionFinished())
+            {
+                FinishCompetition();
+            }
         }
 
-        public List<string> GetOptimizedRefList()
+        private bool IsRefCompetitionFinished()
         {
-            return _refCliksStats.OrderBy(de => de.Value).Select(de => de.Key).ToList();
-        } 
+            return _finishedSessionsInBGroup > _targetSamplesForBGroup;
+        }
 
-        public long GetTargetSamplesForBGroup()
+        private void FinishCompetition()
         {
-            return TargetSamplesPerAd * _sortedRefsList.Count;
+            List<string> optimizedRefList = _refCliksStats.OrderByDescending(de => de.Value).Select(de => de.Key).ToList();
+            BaseRefsList = optimizedRefList;
+            _finishedSessionsInBGroup = 0;
+            foreach (var key in _refCliksStats.Keys.ToList())
+            {
+                _refCliksStats[key] = 0;
+            }
         }
     }
 }

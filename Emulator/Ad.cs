@@ -26,5 +26,10 @@ namespace Emulator
         {
             get { return _clickProbability; }
         }
+
+        public override string ToString()
+        {
+            return string.Format("'{0}' : {1}", _currentRef, _clickProbability);
+        }
     }
 }
