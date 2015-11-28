@@ -12,7 +12,9 @@ namespace Emulator
     {
         static void Main(string[] args)
         {
-            const long testCount = 50000;
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
+            const long testCount = 800000;
             const double nextPosMoveProbability = 0.9;
 
             Random rnd = new Random();
@@ -84,6 +86,8 @@ namespace Emulator
             {
                 Console.WriteLine("The result is not incorrect. Failed {0} from {1} times.", failedCount, finalRefsList.Count);
             }
+
+            Console.WriteLine("Done in {0} ms.", stopwatch.ElapsedMilliseconds);
         }
     }
 }

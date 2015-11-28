@@ -22,8 +22,7 @@ namespace CoreLib
         private readonly Stopwatch _startWatch = Stopwatch.StartNew();
         private readonly object _stupidLock = new object();
         private readonly Random _rnd = new Random();
-        private readonly List<UserSession> _userSessions = new List<UserSession>(); 
-        private int _currentPriorityIndex = 0;
+        private readonly Dictionary<Guid, UserSession> _userSessions = new Dictionary<Guid, UserSession>();
         private const double GroupBRate = 0.8; //0.2
         private AdsSet _currentAdsSet;
 
@@ -92,13 +91,13 @@ namespace CoreLib
         {
             lock (_stupidLock)
             {
-                UserSession session = _userSessions.SingleOrDefault(userSession => userSession.Id == sessionId);
-
-                if (session == null)
+                if (!_userSessions.ContainsKey(sessionId))
                 {
                     Trace.TraceWarning("Session with id: {0} not found in the list of started sessions.", sessionId);
                     return;
                 }
+
+                UserSession session = _userSessions[sessionId];
 
                 if (clickedLink == null)
                 {
@@ -146,10 +145,9 @@ namespace CoreLib
                  userId,
                  userData,
                  isInBgroup,
-                 _currentAdsSet,
-                 refsList);
+                 _currentAdsSet);
 
-            _userSessions.Add(curSession);
+            _userSessions.Add(curSession.Id, curSession);
 
             return refsList;
         }

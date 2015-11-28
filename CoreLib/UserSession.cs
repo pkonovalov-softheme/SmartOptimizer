@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+using SmartOptimizer;
 
-namespace SmartOptimizer
+namespace CoreLib
 {
     public class UserSession
     {
@@ -20,20 +19,10 @@ namespace SmartOptimizer
 
         public AdsSet SessionAdsSet { get; private set; }
 
-        public List<string> ShowedRefs
-        {
-            get { return _showedRefs; }
-        }
-
-        //private string _clickedRef;
-        private List<string> _showedRefs; 
-
-
         public UserSession(Guid id, Guid userId, 
             Dictionary<string, string> userData, 
             bool inBGroup,
-            AdsSet sessionAdsSet,
-            List<string> showedRefs)
+            AdsSet sessionAdsSet)
         {
             UserId = userId;
             UserData = userData;

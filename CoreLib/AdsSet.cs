@@ -2,18 +2,17 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Web;
 
-namespace SmartOptimizer
+namespace CoreLib
 {
     public class AdsSet
     {
         private const int TargetSamplesPerAd = 400; //ToDo: calculate
         private readonly List<string> _sortedRefsList;
 
-        readonly Dictionary<string, long> _refCliksStats = new Dictionary<string, long>();
+        readonly Lazy<Dictionary<string, long>> _refCliksStats;
         private long _finishedSessionsInBGroup;
-        private readonly Random _rnd = new Random();
+        private static readonly Random Rnd = new Random();
         private readonly long _targetSamplesForBGroup;
 
         public AdsSet(List<string> baseRefsList)
@@ -22,12 +21,7 @@ namespace SmartOptimizer
 
             _sortedRefsList = new List<string>(baseRefsList);
             _sortedRefsList.Sort();
-
-            foreach (string curRef in _sortedRefsList)
-            {
-                _refCliksStats.Add(curRef, 0);
-            }
-
+            _refCliksStats = new Lazy<Dictionary<string, long>>(() => { return _sortedRefsList.ToDictionary(x => x, x => 0L); });
             _targetSamplesForBGroup = TargetSamplesPerAd * _sortedRefsList.Count;
         }
 
@@ -70,19 +64,19 @@ namespace SmartOptimizer
 
         public IEnumerable<string> NextRandomShuffle()
         {
-            IEnumerable<string> result = _sortedRefsList.OrderBy(x => _rnd.Next());
+            IEnumerable<string> result = _sortedRefsList.OrderBy(x => Rnd.Next());
             return result;
         }
 
         public void ClickOnRef(string clickedRef)
         {
-            if (!_refCliksStats.ContainsKey(clickedRef))
+            if (!_refCliksStats.Value.ContainsKey(clickedRef))
             {
                 Trace.TraceWarning("Clicked ref {0} does not exists in the AdsSet refs dictinary.", clickedRef);
                 return;
             }
 
-            _refCliksStats[clickedRef]++;
+            _refCliksStats.Value[clickedRef]++;
             _finishedSessionsInBGroup++;
 
             if (IsRefCompetitionFinished())
@@ -98,12 +92,12 @@ namespace SmartOptimizer
 
         private void FinishCompetition()
         {
-            List<string> optimizedRefList = _refCliksStats.OrderByDescending(de => de.Value).Select(de => de.Key).ToList();
+            List<string> optimizedRefList = _refCliksStats.Value.OrderByDescending(de => de.Value).Select(de => de.Key).ToList();
             BaseRefsList = optimizedRefList;
             _finishedSessionsInBGroup = 0;
-            foreach (var key in _refCliksStats.Keys.ToList())
+            foreach (var key in _refCliksStats.Value.Keys.ToList())
             {
-                _refCliksStats[key] = 0;
+                _refCliksStats.Value[key] = 0;
             }
         }
     }
