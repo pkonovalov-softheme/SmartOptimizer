@@ -59,7 +59,7 @@ namespace CoreLib
             List<string> refsList,
             Guid sessionId)
         {
-            lock (_stupidLock)
+            lock(_stupidLock)
             {
                 _userSessionCount++;
 
@@ -87,17 +87,18 @@ namespace CoreLib
             return refsList;
         }
 
-        public void SetSessionResult(Guid sessionId, string clickedLink)
+        public bool SetSessionResult(Guid sessionId, string clickedLink)
         {
             lock (_stupidLock)
             {
                 if (!_userSessions.ContainsKey(sessionId))
                 {
                     Trace.TraceWarning("Session with id: {0} not found in the list of started sessions.", sessionId);
-                    return;
+                    return false;
                 }
 
                 UserSession session = _userSessions[sessionId];
+                _userSessions.Remove(sessionId);
 
                 if (clickedLink == null)
                 {
@@ -106,13 +107,16 @@ namespace CoreLib
                     {
                         Debugger.Break();
                     }
-                    return;
+
+                    return false;
                 }
 
                 if (session.InBGroup)
                 {
-                    _currentAdsSet.ClickOnRef(clickedLink);
+                    return _currentAdsSet.ClickOnRef(clickedLink);
                 }
+
+                return true;
             }
         }
 

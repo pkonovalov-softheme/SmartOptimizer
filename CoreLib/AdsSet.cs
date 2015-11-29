@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace CoreLib
 {
-    public class AdsSet
+    public sealed class AdsSet
     {
-        private const int TargetSamplesPerAd = 400; //ToDo: calculate
+        private const int TargetSamplesPerAd = 8000; //ToDo: calculate // 8000 - 2%; 1000 -10% of erorrs; 800 - 15%; 400 - 20%; 
         private readonly List<string> _sortedRefsList;
 
         readonly Lazy<Dictionary<string, long>> _refCliksStats;
@@ -26,7 +26,7 @@ namespace CoreLib
         }
 
         #region EqualityOpers
-        protected bool Equals(AdsSet other)
+        bool Equals(AdsSet other)
         {
             return ReferenceEquals(SortedRefs, other.SortedRefs) || this.SortedRefs.SequenceEqual(other.SortedRefs);
         }
@@ -68,12 +68,13 @@ namespace CoreLib
             return result;
         }
 
-        public void ClickOnRef(string clickedRef)
+        // Returns whether the competition is completeв
+        public bool ClickOnRef(string clickedRef)
         {
             if (!_refCliksStats.Value.ContainsKey(clickedRef))
             {
                 Trace.TraceWarning("Clicked ref {0} does not exists in the AdsSet refs dictinary.", clickedRef);
-                return;
+                return false;
             }
 
             _refCliksStats.Value[clickedRef]++;
@@ -82,7 +83,10 @@ namespace CoreLib
             if (IsRefCompetitionFinished())
             {
                 FinishCompetition();
+                return true;
             }
+
+            return false;
         }
 
         private bool IsRefCompetitionFinished()
