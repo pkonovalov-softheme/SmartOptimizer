@@ -23,10 +23,10 @@ namespace SmartOptimizer
             List<string> refsList,
             Guid sessionId)
         {
-            return _stageOptimizer.GetDataPositions(userId, userData, refsList, sessionId);
+            return _stageOptimizer.GetDataPositions(userId, userData, refsList, sessionId.ToString());
         }
 
-        public void SetSessionResult(Guid sessionId, string clickedLink)
+        public void SetSessionResult(string sessionId, string clickedLink)
         {
             _stageOptimizer.SetSessionResult(sessionId, clickedLink);
         }

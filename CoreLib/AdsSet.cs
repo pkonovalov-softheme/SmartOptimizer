@@ -7,7 +7,7 @@ namespace CoreLib
 {
     public sealed class AdsSet
     {
-        private const int TargetSamplesPerAd = 8000; //ToDo: calculate // 8000 - 2%; 1000 -10% of erorrs; 800 - 15%; 400 - 20%; 
+        private const int TargetSamplesPerAd = 800; //ToDo: calculate // 8000 - 2%; 1000 -10% of erorrs; 800 - 15%; 400 - 20%; 
         private readonly List<string> _sortedRefsList;
 
         readonly Lazy<Dictionary<string, long>> _refCliksStats;

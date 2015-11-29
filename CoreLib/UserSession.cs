@@ -6,7 +6,7 @@ namespace CoreLib
 {
     public class UserSession
     {
-        public Guid Id { get; private set; }
+        public string Id { get; private set; }
 
         public Dictionary<string, string> UserData { get; private set; }
 
@@ -19,7 +19,10 @@ namespace CoreLib
 
         public AdsSet SessionAdsSet { get; private set; }
 
-        public UserSession(Guid id, Guid userId, 
+        public DateTime CreationTime { get; private set; }
+
+
+        public UserSession(string id, Guid userId, 
             Dictionary<string, string> userData, 
             bool inBGroup,
             AdsSet sessionAdsSet)
@@ -29,6 +32,7 @@ namespace CoreLib
             Id = id;
             InBGroup = inBGroup;
             SessionAdsSet = sessionAdsSet;
+            CreationTime = DateTime.Now;
         }
 
         ///// <summary>

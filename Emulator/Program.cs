@@ -15,7 +15,7 @@ namespace Emulator
             Stopwatch stopwatch = Stopwatch.StartNew();
 
             const long testCount = 8000000;
-            const double nextPosMoveProbability = 0.7;
+            const double nextPosMoveProbability = 0.9;
             long failedCount = 0;
             long correctCount = 0;
 
@@ -23,8 +23,8 @@ namespace Emulator
 
             List<Ad> ads = new List<Ad>()
             {
-                new Ad("1.ref", 0.10), new Ad("2.ref", 0.11), new Ad("3.ref", 0.12), new Ad("4.ref", 0.13), new Ad("5.ref", 0.14), new Ad("6.ref", 0.15), 
-                new Ad("7.ref", 0.16), new Ad("8.ref", 0.17), new Ad("9.ref", 0.18), new Ad("10.ref", 0.19)
+                new Ad("1.ref", 0.10), new Ad("2.ref", 0.11), new Ad("3.ref", 0.12), new Ad("4.ref", 0.13), new Ad("5.ref", 0.14),
+                new Ad("6.ref", 0.15), new Ad("7.ref", 0.16), new Ad("8.ref", 0.17), new Ad("9.ref", 0.18), new Ad("10.ref", 0.19)
             };
 
             List<Ad> correctAdsList = ads.OrderByDescending(x => x.ClickProbability).ToList();
@@ -33,7 +33,7 @@ namespace Emulator
             for (int i = 0; i < testCount; i++)
             {
                 Guid userId = Guid.NewGuid();
-                Guid sessionId = Guid.NewGuid();
+                string sessionId = Guid.NewGuid().ToString();
                 List<string> refsList = stageOptimizer.GetDataPositions(userId,
                     new Dictionary<string, string>(),
                     ads.Select(ad => ad.CurrentRef).ToList(),

@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Caching;
+using System.Runtime.Caching.Configuration;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using SmartOptimizer;
 
 namespace CoreLib
@@ -17,20 +21,18 @@ namespace CoreLib
 
 
         private readonly Stage _currentStage;
-        private List<UserPreferences> _userPreferenceses;
-        private long _userSessionCount = 0;
-        private readonly Stopwatch _startWatch = Stopwatch.StartNew();
         private readonly object _stupidLock = new object();
         private readonly Random _rnd = new Random();
-        private readonly Dictionary<Guid, UserSession> _userSessions = new Dictionary<Guid, UserSession>();
+        //private readonly Dictionary<Guid, UserSession> _userSessions = new Dictionary<Guid, UserSession>();
+
         private const double GroupBRate = 0.8; //0.2
         private AdsSet _currentAdsSet;
-
+        readonly MemoryCache _userSessionsCache = new MemoryCache("CachingProvider");
+        readonly CacheItemPolicy _cachePolicy = new CacheItemPolicy() {SlidingExpiration = TimeSpan.FromMinutes(10)};
 
         public StageOptimizer()
         {
             _currentStage = Stage.Base;
-            _userPreferenceses = new List<UserPreferences>();
             _currentAdsSet = new AdsSet(new List<string>());
         }
 
@@ -57,12 +59,10 @@ namespace CoreLib
         public List<string> GetDataPositions(Guid userId,
             Dictionary<string, string> userData,
             List<string> refsList,
-            Guid sessionId)
+            string sessionId)
         {
             lock(_stupidLock)
             {
-                _userSessionCount++;
-
                 switch (_currentStage)
                 {
                     case Stage.Base:
@@ -87,18 +87,19 @@ namespace CoreLib
             return refsList;
         }
 
-        public bool SetSessionResult(Guid sessionId, string clickedLink)
+        public bool SetSessionResult(string sessionId, string clickedLink)
         {
             lock (_stupidLock)
             {
-                if (!_userSessions.ContainsKey(sessionId))
+               // if (!_userSessions.ContainsKey(sessionId))
+                if (!_userSessionsCache.Contains(sessionId))
                 {
                     Trace.TraceWarning("Session with id: {0} not found in the list of started sessions.", sessionId);
                     return false;
                 }
 
-                UserSession session = _userSessions[sessionId];
-                _userSessions.Remove(sessionId);
+                UserSession session = (UserSession)_userSessionsCache[sessionId];
+                _userSessionsCache.Remove(sessionId);
 
                 if (clickedLink == null)
                 {
@@ -125,7 +126,7 @@ namespace CoreLib
             return _currentAdsSet.BaseRefsList;
         }
 
-        private List<string> GetDataFromBaseStage(Guid userId, Dictionary<string, string> userData, List<string> refsList, Guid sessionId)
+        private List<string> GetDataFromBaseStage(Guid userId, Dictionary<string, string> userData, List<string> refsList, string sessionId)
         {
             bool isInBgroup = false;
             AdsSet set = new AdsSet(refsList);
@@ -151,7 +152,7 @@ namespace CoreLib
                  isInBgroup,
                  _currentAdsSet);
 
-            _userSessions.Add(curSession.Id, curSession);
+            _userSessionsCache.Add(curSession.Id, curSession, _cachePolicy);
 
             return refsList;
         }
