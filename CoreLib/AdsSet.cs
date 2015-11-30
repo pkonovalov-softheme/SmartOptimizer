@@ -14,6 +14,7 @@ namespace CoreLib
         private long _finishedSessionsInBGroup;
         private static readonly Random Rnd = new Random();
         private readonly long _targetSamplesForBGroup;
+        private static long _missedSessions = 0;
 
         public AdsSet(List<string> baseRefsList)
         {
@@ -73,6 +74,7 @@ namespace CoreLib
         {
             if (!_refCliksStats.Value.ContainsKey(clickedRef))
             {
+                _missedSessions++;
                 Trace.TraceWarning("Clicked ref {0} does not exists in the AdsSet refs dictinary.", clickedRef);
                 return false;
             }
