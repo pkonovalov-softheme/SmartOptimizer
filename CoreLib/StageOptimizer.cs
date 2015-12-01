@@ -36,28 +36,7 @@ namespace CoreLib
             _currentAdsSet = new AdsSet(new List<string>());
         }
 
-        /*
-         *  Fake methods to replace with real cals
-         *  ===================================================================
-         */
-        public List<string> GetTextClasses()
-        {
-            return new List<string>() {"1", "2", "3", "4", "5"};
-        }
-
-        public string GetTextClass(string href)
-        {
-            return "1";
-        }
-
-        /*
-         * ===================================================================
-        *  Fake methods end
-        */
-
-
         public List<string> GetDataPositions(Guid userId,
-            Dictionary<string, string> userData,
             List<string> refsList,
             string sessionId)
         {
@@ -67,20 +46,7 @@ namespace CoreLib
                 {
                     case Stage.Base:
 
-                        //if (_baseStageABtest == null)
-                        //{
-                        //    _baseStageABtest = new ABtest(refsList, TargetExampesCount);
-                        //}
-
-
-
-                        return GetDataFromBaseStage(userId, userData, refsList, sessionId);
-
-                    //case Stage.Prioritets:
-
-
-
-                    //    return GetDataFromPrioritetStage(userId, userData, refsList, sessionId);
+                        return GetDataFromBaseStage(userId, refsList, sessionId);
                 }
             }
 
@@ -126,7 +92,7 @@ namespace CoreLib
             return _currentAdsSet.BaseRefsList;
         }
 
-        private List<string> GetDataFromBaseStage(Guid userId, Dictionary<string, string> userData, List<string> refsList, string sessionId)
+        private List<string> GetDataFromBaseStage(Guid userId, List<string> refsList, string sessionId)
         {
             bool isInBgroup = false;
             AdsSet set = new AdsSet(refsList);
@@ -148,7 +114,7 @@ namespace CoreLib
 
             var curSession = new UserSession(sessionId,
                  userId,
-                 userData,
+                 null,
                  isInBgroup,
                  _currentAdsSet);
 
@@ -156,41 +122,6 @@ namespace CoreLib
 
             return refsList;
         }
-
-        //private List<string> GetDataFromPrioritetStage(Guid userId, Dictionary<string, string> userData,
-        //    List<string> refsList, Guid sessionId)
-        //{
-        //    UserSession curSession;
-        //    string sex = userData["sex"];
-        //    int curIndex = 0;
-
-        //    if (sex == "F")
-        //    {
-        //        curIndex = 1;
-        //    }
-
-        //    if (ShouldAddUserToBGroup())
-        //    {
-        //        // B group
-        //        string firstRef = _prioritetStageABtests[curIndex].GetNextRandomHrefToTest();
-        //        curSession = new UserSession(sessionId, Stage.Base, userId, userData, firstRef, _currentPriorityIndex);
-        //        refsList.Remove(firstRef);
-        //        refsList.Insert(0, firstRef);
-        //    }
-        //    else
-        //    {
-        //        curSession = new UserSession(sessionId, Stage.Base, userId, userData);
-        //    }
-
-        //    _userSessions.Add(curSession);
-
-        //    if (_prioritetStageABtests[curIndex].IsComplited)
-        //    {
-        //        return _prioritetStageABtests[curIndex].GetOrderedHrefs();
-        //    }
-
-        //    return refsList;
-        //}
 
         /// <summary>
         /// Should we add to group with random permutations where we teach
@@ -202,13 +133,5 @@ namespace CoreLib
             bool result = curVal < GroupBRate;
             return result;
         }
-
-        //private bool DoesWeKnowTheUser(Guid userId)
-        //{
-        //    const int knownLimit = 100;
-
-        //    return (_userPreferenceses.Single(userPreferences => userPreferences.UserId == userId).Preferences.Count >
-        //            knownLimit);
-        //}
     }
 }

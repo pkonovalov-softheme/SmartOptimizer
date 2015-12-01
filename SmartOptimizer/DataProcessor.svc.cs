@@ -19,29 +19,23 @@ namespace SmartOptimizer
         private readonly StageOptimizer _stageOptimizer = new StageOptimizer();
 
         public List<string> GetDataPositions(Guid userId,
-            Dictionary<string, string> userData,
             List<string> refsList,
             Guid sessionId)
         {
-            return _stageOptimizer.GetDataPositions(userId, userData, refsList, sessionId.ToString());
+            try
+            {
+                return _stageOptimizer.GetDataPositions(userId, refsList, sessionId.ToString());
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError("Fatal unhandled exception: {0}", ex.ToString());
+                return refsList;
+            }
         }
 
         public void SetSessionResult(string sessionId, string clickedLink)
         {
             _stageOptimizer.SetSessionResult(sessionId, clickedLink);
-        }
-
-        public CompositeType GetDataUsingDataContract(CompositeType composite)
-        {
-            if (composite == null)
-            {
-                throw new ArgumentNullException("composite");
-            }
-            if (composite.BoolValue)
-            {
-                composite.StringValue += "Suffix";
-            }
-            return composite;
         }
     }
 }
