@@ -34,14 +34,5 @@ namespace CoreLib
             SessionAdsSet = sessionAdsSet;
             CreationTime = DateTime.Now;
         }
-
-        ///// <summary>
-        ///// Sets session result - sets the ref that was clicked
-        ///// </summary>
-        ///// <param name="clickedRef"></param>
-        //public void SetSessionResult(string clickedRef)
-        //{
-        //    _clickedRef = clickedRef;
-        //}
     }
 }

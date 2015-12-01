@@ -35,7 +35,6 @@ namespace Emulator
                 Guid userId = Guid.NewGuid();
                 string sessionId = Guid.NewGuid().ToString();
                 List<string> refsList = stageOptimizer.GetDataPositions(userId,
-                    new Dictionary<string, string>(),
                     ads.Select(ad => ad.CurrentRef).ToList(),
                     sessionId);
 
