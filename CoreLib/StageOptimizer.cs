@@ -45,7 +45,6 @@ namespace CoreLib
                 switch (_currentStage)
                 {
                     case Stage.Base:
-
                         return GetDataFromBaseStage(userId, refsList, sessionId);
                 }
             }
@@ -57,7 +56,6 @@ namespace CoreLib
         {
             lock (_stupidLock)
             {
-               // if (!_userSessions.ContainsKey(sessionId))
                 if (!_userSessionsCache.Contains(sessionId))
                 {
                     Trace.TraceWarning("Session with id: {0} not found in the list of started sessions.", sessionId);
