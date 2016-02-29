@@ -10,14 +10,40 @@ namespace Emulator
 {
     class Program
     {
+        private static List<Ad> _correctAdsList;
+        private static long _failedCount = 0;
+        private static long _correctCount = 0;
+
+        private static void CompetitionFinished(object sender, EventArgs e)
+        {
+            CompetitionFinishedEventArgs args = (CompetitionFinishedEventArgs)e;
+            AdsBlock block = args.AdsBlock;
+
+            List<string> finalRefsList = block.BaseRefsList;
+
+            for (int y = 0; y < finalRefsList.Count; y++)
+            {
+                if (finalRefsList[y] != _correctAdsList[y].CurrentRef)
+                {
+                    _failedCount++;
+                    if (Debugger.IsAttached)
+                    {
+                        //Debugger.Break();
+                    }
+                }
+                else
+                {
+                    _correctCount++;
+                }
+            }
+        }
+
         static void Main(string[] args)
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
 
-            const long testCount = 8000000;
+            const long testCount = 100000;
             const double nextPosMoveProbability = 0.9;
-            long failedCount = 0;
-            long correctCount = 0;
 
             Random rnd = new Random();
 
@@ -27,16 +53,22 @@ namespace Emulator
                 new Ad("6.ref", 0.15), new Ad("7.ref", 0.16), new Ad("8.ref", 0.17), new Ad("9.ref", 0.18), new Ad("10.ref", 0.19)
             };
 
-            List<Ad> correctAdsList = ads.OrderByDescending(x => x.ClickProbability).ToList();
+            const int adsBlockId = 0;
+
+            _correctAdsList = ads.OrderByDescending(x => x.ClickProbability).ToList();
 
             StageOptimizer stageOptimizer = new StageOptimizer();
+            List<string> refs = ads.Select(ad => ad.CurrentRef).ToList();
+            stageOptimizer.AddOrUpdateBlock(adsBlockId, refs);
+
+            AdsBlock block = stageOptimizer.GeAdsBlock(adsBlockId);
+            block.CompetitionFinished += CompetitionFinished;
+
             for (int i = 0; i < testCount; i++)
             {
                 Guid userId = Guid.NewGuid();
                 string sessionId = Guid.NewGuid().ToString();
-                List<string> refsList = stageOptimizer.GetDataPositions(userId,
-                    ads.Select(ad => ad.CurrentRef).ToList(),
-                    sessionId);
+                List<string> refsList = stageOptimizer.GetDataPositions(adsBlockId, userId, sessionId);
 
                 string clickedRef = null;
 
@@ -57,31 +89,14 @@ namespace Emulator
                     }
                 }
 
+
                 if (clickedRef != null)
                 {
-                    if (stageOptimizer.SetSessionResult(sessionId, clickedRef))
-                    {
-                        List<string> finalRefsList = stageOptimizer.GetBaseBaseRefsList(ads.Select(ad => ad.CurrentRef).ToList());
-                        for (int y = 0; y < finalRefsList.Count; y++)
-                        {
-                            if (finalRefsList[y] != correctAdsList[y].CurrentRef)
-                            {
-                                failedCount++;
-                                if (Debugger.IsAttached)
-                                {
-                                    //Debugger.Break();
-                                }
-                            }
-                            else
-                            {
-                                correctCount++;
-                            }
-                        }
-                    }
+                    stageOptimizer.SetSessionResult(sessionId, clickedRef, 1);
                 }
             }
 
-            double perc = (double)failedCount / (failedCount + correctCount);
+            double perc = (double)_failedCount / (_failedCount + _correctCount);
             Console.WriteLine("The result is not incorrect. Failed: {0}%.", perc * 100);
             Console.WriteLine("Done in {0} ms.", stopwatch.ElapsedMilliseconds);
         }

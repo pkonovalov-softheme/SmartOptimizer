@@ -17,21 +17,22 @@ namespace CoreLib
         /// </summary>
         public bool InBGroup { get; private set; }
 
-        public AdsSet SessionAdsSet { get; private set; }
+       // public AdsSet SessionAdsSet { get; private set; }
 
         public DateTime CreationTime { get; private set; }
 
+        public AdsBlock Block { get; private set; }
 
         public UserSession(string id, Guid userId, 
             Dictionary<string, string> userData, 
             bool inBGroup,
-            AdsSet sessionAdsSet)
+            AdsBlock adsBlock)
         {
+            Block = adsBlock;
             UserId = userId;
             UserData = userData;
             Id = id;
             InBGroup = inBGroup;
-            SessionAdsSet = sessionAdsSet;
             CreationTime = DateTime.Now;
         }
     }

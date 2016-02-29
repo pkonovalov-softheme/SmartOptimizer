@@ -14,13 +14,16 @@ namespace OptimizationWebService
     {
         private readonly StageOptimizer _stageOptimizer = new StageOptimizer();
 
-        public List<string> GetDataPositions(Guid userId,
-            List<string> refsList,
-            Guid sessionId)
+        public void UpdateBlockGroup(int blockId, List<string> refsList, bool optimize)
+        {
+            
+        }
+
+        public List<string> GetDataPositions(int blockId, Guid userId, Guid sessionId)
         {
             try
             {
-                return _stageOptimizer.GetDataPositions(userId, refsList, sessionId.ToString());
+                return _stageOptimizer.GetDataPositions(blockId, userId, sessionId.ToString());
             }
             catch (Exception ex)
             {
@@ -29,11 +32,11 @@ namespace OptimizationWebService
             }
         }
 
-        public void SetSessionResult(string sessionId, string clickedLink)
+        public void SetSessionResult(string sessionId, string clickedLink, int value)
         {
             try
             {
-                _stageOptimizer.SetSessionResult(sessionId, clickedLink);
+                _stageOptimizer.SetSessionResult(sessionId, clickedLink, value);
             }
             catch (Exception ex)
             {

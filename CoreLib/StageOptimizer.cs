@@ -14,52 +14,68 @@ namespace CoreLib
 {
     public class StageOptimizer
     {
-        private readonly List<string> _userDataPriority = new List<string>()
-        {
-            "Gender"
-        };
-
-
-        private readonly Stage _currentStage;
         private readonly object _stupidLock = new object();
         private readonly Random _rnd = new Random();
-        //private readonly Dictionary<Guid, UserSession> _userSessions = new Dictionary<Guid, UserSession>();
-
         private const double GroupBRate = 0.8; //0.2
-        private AdsSet _currentAdsSet;
+       // private AdsSet _currentAdsSet = new AdsSet(new List<string>());
         readonly MemoryCache _userSessionsCache = new MemoryCache("CachingProvider");
         readonly CacheItemPolicy _cachePolicy = new CacheItemPolicy() {SlidingExpiration = TimeSpan.FromMinutes(10)};
+        readonly Dictionary<int, AdsBlock> _adsBlocks = new Dictionary<int, AdsBlock>();
 
-        public StageOptimizer()
+        public void AddOrUpdateBlock(int blockId, List<string> refsList)
         {
-            _currentStage = Stage.Base;
-            _currentAdsSet = new AdsSet(new List<string>());
+            if (_adsBlocks.ContainsKey(blockId))
+            {
+                _adsBlocks[blockId] = new AdsBlock(blockId, refsList);
+            }
+            else
+            {
+                _adsBlocks.Add(blockId, new AdsBlock(blockId, refsList));
+            }
         }
 
-        public List<string> GetDataPositions(Guid userId,
-            List<string> refsList,
-            string sessionId)
+        public AdsBlock GeAdsBlock(int blockId)
+        {
+            return _adsBlocks[blockId];
+        }
+
+        public List<string> GetDataPositions(int blockId, Guid userId, string sessionId)
         {
             lock(_stupidLock)
             {
-                switch (_currentStage)
+                AdsBlock adsBlock = _adsBlocks[blockId];
+                bool isInBgroup = false;
+                List<string> refsList;
+                if (ShouldAddUserToBGroup())
                 {
-                    case Stage.Base:
-                        return GetDataFromBaseStage(userId, refsList, sessionId);
+                    refsList = adsBlock.NextRandomShuffle().ToList();
+                    isInBgroup = true;
                 }
-            }
+                else
+                {
+                    refsList = adsBlock.BaseRefsList;
+                }
 
-            return refsList;
+                var curSession = new UserSession(sessionId,
+                     userId,
+                     null,
+                     isInBgroup,
+                     adsBlock);
+
+                _userSessionsCache.Add(curSession.Id, curSession, _cachePolicy);
+
+                return refsList;
+            }
         }
 
-        public bool SetSessionResult(string sessionId, string clickedLink)
+        public void SetSessionResult(string sessionId, string clickedLink, int value)
         {
             lock (_stupidLock)
             {
                 if (!_userSessionsCache.Contains(sessionId))
                 {
                     Trace.TraceWarning("Session with id: {0} not found in the list of started sessions.", sessionId);
-                    return false;
+                    return;
                 }
 
                 UserSession session = (UserSession)_userSessionsCache[sessionId];
@@ -73,52 +89,14 @@ namespace CoreLib
                         Debugger.Break();
                     }
 
-                    return false;
+                    return;
                 }
 
                 if (session.InBGroup)
                 {
-                    return _currentAdsSet.ClickOnRef(clickedLink);
+                    session.Block.ClickOnRef(clickedLink, value);
                 }
-
-                return true;
             }
-        }
-
-        public List<string> GetBaseBaseRefsList(List<string> refsList)
-        {
-            return _currentAdsSet.BaseRefsList;
-        }
-
-        private List<string> GetDataFromBaseStage(Guid userId, List<string> refsList, string sessionId)
-        {
-            bool isInBgroup = false;
-            AdsSet set = new AdsSet(refsList);
-
-            if (ShouldAddUserToBGroup())
-            {
-                refsList = set.NextRandomShuffle().ToList();
-                isInBgroup = true;
-            }
-            else
-            {
-                refsList = set.BaseRefsList;
-            }
-
-            if (set != _currentAdsSet)
-            {
-                _currentAdsSet = set;
-            }
-
-            var curSession = new UserSession(sessionId,
-                 userId,
-                 null,
-                 isInBgroup,
-                 _currentAdsSet);
-
-            _userSessionsCache.Add(curSession.Id, curSession, _cachePolicy);
-
-            return refsList;
         }
 
         /// <summary>

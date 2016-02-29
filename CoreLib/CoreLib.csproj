@@ -90,7 +90,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AdsSet.cs" />
+    <Compile Include="AdsBlock.cs" />
+    <Compile Include="AdStats.cs" />
     <Compile Include="OptimizationTartget.cs" />
     <Compile Include="Stage.cs" />
     <Compile Include="StageOptimizer.cs" />

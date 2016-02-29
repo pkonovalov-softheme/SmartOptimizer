@@ -12,11 +12,11 @@ namespace OptimizationWebService
     public interface IDataProcessor
     {
         [OperationContract]
-        List<string> GetDataPositions(Guid userId, List<string> refsList, Guid sessionId);
+        List<string> GetDataPositions(int blockId, Guid userId, Guid sessionId);
 
 
         [OperationContract]
-        void SetSessionResult(string sessionId, string clickedLink);
+        void SetSessionResult(string sessionId, string clickedLink, int value);
 
     }
 }
