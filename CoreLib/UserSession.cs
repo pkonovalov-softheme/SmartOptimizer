@@ -10,7 +10,7 @@ namespace CoreLib
 
         public Dictionary<string, string> UserData { get; private set; }
 
-        public Guid UserId { get; private set; }
+        public string UserId { get; private set; }
 
         /// <summary>
         /// Is this user session inside group where we are randomly testing efficiency of ads permutations
@@ -23,7 +23,7 @@ namespace CoreLib
 
         public AdsBlock Block { get; private set; }
 
-        public UserSession(string id, Guid userId, 
+        public UserSession(string id, string userId, 
             Dictionary<string, string> userData, 
             bool inBGroup,
             AdsBlock adsBlock)

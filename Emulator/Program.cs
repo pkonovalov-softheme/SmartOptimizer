@@ -68,7 +68,7 @@ namespace Emulator
             {
                 Guid userId = Guid.NewGuid();
                 string sessionId = Guid.NewGuid().ToString();
-                List<string> refsList = stageOptimizer.GetDataPositions(adsBlockId, userId, sessionId);
+                List<string> refsList = stageOptimizer.GetDataPositions(adsBlockId, userId.ToString(), sessionId);
 
                 string clickedRef = null;
 

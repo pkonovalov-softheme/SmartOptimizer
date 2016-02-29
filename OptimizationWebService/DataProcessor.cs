@@ -14,12 +14,7 @@ namespace OptimizationWebService
     {
         private readonly StageOptimizer _stageOptimizer = new StageOptimizer();
 
-        public void UpdateBlockGroup(int blockId, List<string> refsList, bool optimize)
-        {
-            
-        }
-
-        public List<string> GetDataPositions(int blockId, Guid userId, Guid sessionId)
+        public List<string> GetDataPositions(int blockId, string userId, string sessionId)
         {
             try
             {
@@ -44,5 +39,24 @@ namespace OptimizationWebService
                 throw;
             }
         }
+
+        public void AddOrUpdateBlock(int blockId, List<string> refsList)
+        {
+            try
+            {
+                _stageOptimizer.AddOrUpdateBlock(blockId, refsList);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError("Fatal unhandled exception: {0} in AddOrUpdateBlock", ex.ToString());
+                throw;
+            }
+        }
+
+        public string Greeting()
+        {
+            return "Hello World";
+        }
+
     }
 }

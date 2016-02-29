@@ -39,11 +39,20 @@ namespace CoreLib
             return _adsBlocks[blockId];
         }
 
-        public List<string> GetDataPositions(int blockId, Guid userId, string sessionId)
+        public List<string> GetDataPositions(int blockId, string userId, string sessionId)
         {
             lock(_stupidLock)
             {
-                AdsBlock adsBlock = _adsBlocks[blockId];
+                AdsBlock adsBlock;
+                try
+                {
+                    adsBlock = _adsBlocks[blockId];
+                }
+                catch (KeyNotFoundException)
+                {
+                    throw new InvalidOperationException("The is no added block with id: " + blockId);
+                }
+
                 bool isInBgroup = false;
                 List<string> refsList;
                 if (ShouldAddUserToBGroup())
