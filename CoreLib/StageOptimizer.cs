@@ -77,7 +77,7 @@ namespace CoreLib
             }
         }
 
-        public void SetSessionResult(string sessionId, string clickedLink, int value)
+        public void SetSessionResult(string sessionId, string finalLink, int value)
         {
             lock (_stupidLock)
             {
@@ -90,9 +90,9 @@ namespace CoreLib
                 UserSession session = (UserSession)_userSessionsCache[sessionId];
                 _userSessionsCache.Remove(sessionId);
 
-                if (clickedLink == null)
+                if (finalLink == null)
                 {
-                    Trace.TraceWarning("Session with id: {0} ended with null clickedLink.", sessionId);
+                    Trace.TraceWarning("Session with id: {0} ended with null finalLink.", sessionId);
                     if (Debugger.IsAttached)
                     {
                         Debugger.Break();
@@ -103,7 +103,7 @@ namespace CoreLib
 
                 if (session.InBGroup)
                 {
-                    session.Block.ClickOnRef(clickedLink, value);
+                    session.Block.ClickOnRef(finalLink, value);
                 }
             }
         }

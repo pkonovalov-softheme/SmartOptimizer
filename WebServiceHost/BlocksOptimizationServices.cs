@@ -6,12 +6,13 @@ using System.ServiceModel;
 using System.ServiceModel.Web;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+//using System.Threading.Tasks;
 using CoreLib;
 
 namespace WebServiceHost
 {
     [ServiceContract()]
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     class BlocksOptimizationServices 
     {
         private readonly StageOptimizer _stageOptimizer = new StageOptimizer();
@@ -23,6 +24,7 @@ namespace WebServiceHost
         {
             try
             {
+                Trace.WriteLine($"GetDataPositions called. blockId:{blockId}, sessionId:{sessionId}.");
                 return _stageOptimizer.GetDataPositions(blockId, userId, sessionId);
             }
             catch (Exception ex)
@@ -32,17 +34,16 @@ namespace WebServiceHost
             }
         }
 
-        //curl  -H "Content-Type:application/json" -H "Accept:application/json" -X PUT -d"{\"sessionId\":\"{46cd1b39-5d0a-440a-9650-ae4297b7e2e9}\",\"clickedLink\":\"1.ref\",\"value\":\"1\"}" http://localhost:8080/BlocksOptimizationServices/sessionResult
+        //curl  -H "Content-Type:application/json" -H "Accept:application/json" -X PUT -d"{\"sessionId\":\"{46cd1b39-5d0a-440a-9650-ae4297b7e2e9}\",\"finalLink\":\"1.ref\",\"value\":\"1\"}" http://localhost:8080/BlocksOptimizationServices/sessionResult
         // An operation does not return a reply message, notifications style communication
         [OperationContract(IsOneWay = true)]
         [WebInvoke(Method = "PUT", UriTemplate = "sessionResult", BodyStyle = WebMessageBodyStyle.WrappedRequest, ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
-        public void SetSessionResult(string sessionId, string clickedLink, int value)
+        public void SetSessionResult(string sessionId, string finalLink, int value)
         {
             try
             {
-                Thread.Sleep(5000);
-
-                _stageOptimizer.SetSessionResult(sessionId, clickedLink, value);
+                Trace.WriteLine($"SetSessionResult called. sessionId:{sessionId}, clicked link:{finalLink}.");
+                _stageOptimizer.SetSessionResult(sessionId, finalLink, value);
             }
             catch (Exception ex)
             {
@@ -57,6 +58,7 @@ namespace WebServiceHost
         {
             try
             {
+                Trace.WriteLine($"AddOrUpdateBlock called. Block id:{blockId} has been changed.");
                 _stageOptimizer.AddOrUpdateBlock(blockId, refsList);
             }
             catch (Exception ex)
