@@ -26,7 +26,7 @@ namespace CoreLib
 
     public class AdsBlock
     {
-        private const int TargetSamplesPerAd = 2000; //ToDo: calculate // 8000 - 2%; 1000 -10% of erorrs; 800 - 15%; 400 - 20%; 
+        private const int TargetSamplesPerAd = 20; //ToDo: calculate // 8000 - 2%; 1000 -10% of erorrs; 800 - 15%; 400 - 20%; 
 
         private readonly int _blockId;
         private List<string> _baseRefsList;
@@ -74,19 +74,31 @@ namespace CoreLib
             get { return _blockId; }
         }
 
+        public long TargetSamplesForBGroup
+        {
+            get { return _targetSamplesForBGroup; }
+        }
+
         public IEnumerable<string> NextRandomShuffle()
+        {
+            return NextRandomShuffle(true);
+        }
+
+        public IEnumerable<string> NextRandomShuffle(bool checkSessionCount)
         {
             IEnumerable<string> result = _baseRefsList.OrderBy(x => Rnd.Next());
 
-            _startedSessionsInBGroup++;
-            if (IsRefCompetitionFinished())
+            if (checkSessionCount)
             {
-                FinishCompetition();
+                _startedSessionsInBGroup++;
+                if (IsRefCompetitionFinished())
+                {
+                    FinishCompetition();
+                }
             }
 
             return result;
         }
-
 
         // Returns whether the competition is completeв
         public void ClickOnRef(string clickedRef, int value)

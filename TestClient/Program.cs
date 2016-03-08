@@ -70,7 +70,7 @@ namespace TestClient
 
         static void TestGetDataPositions()
         {
-            const long testCount = 1;
+            const long testCount = 3000;
             const string jsonInput = "{\"blockId\":\"1\",\"userId\":\"{7c596b41-0dc3-45df-9b4c-08840f1da780}\",\"sessionId\":\"{46cd1b39-5d0a-440a-9650-ae4297b7e2e9}\"}";
             List<WebClient> clients = new List<WebClient>();
             for (int i = 0; i < testCount; i++)
@@ -82,11 +82,16 @@ namespace TestClient
             }
 
             Stopwatch watch = Stopwatch.StartNew();
-            for (int i = 0; i < testCount; i++)
+
+            ParallelOptions po = new ParallelOptions();
+            po.MaxDegreeOfParallelism = 1;
+            //0.39
+            Parallel.For(0, testCount, po, index =>
             {
-                WebClient client = clients[i];
-                var response = client.UploadString("http://localhost:8080/BlocksOptimizationServices/dataPositions", "POST", jsonInput);
-            }
+                WebClient client = clients[(int)index];
+                var response = client.UploadString("http://localhost:8080/BlocksOptimizationServices/dataPositions",
+                    "POST", jsonInput);
+            });
 
             watch.Stop();
             double speed = (double)testCount / watch.ElapsedMilliseconds;
