@@ -15,10 +15,12 @@ namespace CoreLib
             //Views = 0;
         }
 
-       // public long Views { get; set; }
+        public long Views { get; set; }
 
         public long TotalValue { get; set; }
 
         public long ClicksCount { get; set; }
+
+        public Dictionary<int, long> PositionsViews { get; set; } // <position, views>
     }
 }

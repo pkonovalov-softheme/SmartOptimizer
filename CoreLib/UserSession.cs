@@ -23,11 +23,15 @@ namespace CoreLib
 
         public AdsBlock Block { get; private set; }
 
+        public List<string> ShowedList { get; private set; }
+
         public UserSession(string id, string userId, 
             Dictionary<string, string> userData, 
             bool inBGroup,
-            AdsBlock adsBlock)
+            AdsBlock adsBlock,
+            List<string> showedList)
         {
+            ShowedList = showedList;
             Block = adsBlock;
             UserId = userId;
             UserData = userData;

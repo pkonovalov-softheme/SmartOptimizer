@@ -26,11 +26,12 @@ namespace CoreLib
 
     public class AdsBlock
     {
+        public BlockStats BlockStats { get; set; }
         private const int TargetSamplesPerAd = 20; //ToDo: calculate // 8000 - 2%; 1000 -10% of erorrs; 800 - 15%; 400 - 20%; 
 
         private readonly int _blockId;
         private List<string> _baseRefsList;
-        private List<string> _prevRefsList;
+        //private List<string> _prevRefsList;
         private readonly long _targetSamplesForBGroup;
         private static readonly Random Rnd = new Random();
         readonly Dictionary<string, AdStats> _refCliksStats;
@@ -50,19 +51,20 @@ namespace CoreLib
             handler(this, new CompetitionFinishedEventArgs(this));
         }
 
-        public AdsBlock(int blockId, List<string> baseRefsList)
+        public AdsBlock(int blockId, List<string> baseRefsList, BlockStats blockStats)
         {
+            BlockStats = blockStats;
             _blockId = blockId;
             _baseRefsList = baseRefsList;
             _targetSamplesForBGroup = TargetSamplesPerAd * baseRefsList.Count;
             _refCliksStats = _baseRefsList.ToDictionary(x => x, x => new AdStats()); 
         }
 
-        public void UpdateAdsBlock(List<string> refsLis)
-        {
-            _prevRefsList = _baseRefsList;
-            _baseRefsList = refsLis;
-        }
+        //public void UpdateAdsBlock(List<string> refsLis)
+        //{
+        //    _prevRefsList = _baseRefsList;
+        //    _baseRefsList = refsLis;
+        //}
 
         public List<string> BaseRefsList
         {
