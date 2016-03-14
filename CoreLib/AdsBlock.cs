@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CoreLib.Statistics;
 
 namespace CoreLib
 {
@@ -51,20 +52,14 @@ namespace CoreLib
             handler(this, new CompetitionFinishedEventArgs(this));
         }
 
-        public AdsBlock(int blockId, List<string> baseRefsList, BlockStats blockStats)
+        public AdsBlock(int blockId, List<string> baseRefsList)
         {
-            BlockStats = blockStats;
+            BlockStats = new BlockStats(blockId);
             _blockId = blockId;
             _baseRefsList = baseRefsList;
             _targetSamplesForBGroup = TargetSamplesPerAd * baseRefsList.Count;
             _refCliksStats = _baseRefsList.ToDictionary(x => x, x => new AdStats()); 
         }
-
-        //public void UpdateAdsBlock(List<string> refsLis)
-        //{
-        //    _prevRefsList = _baseRefsList;
-        //    _baseRefsList = refsLis;
-        //}
 
         public List<string> BaseRefsList
         {
@@ -73,7 +68,7 @@ namespace CoreLib
 
         public int BlockId
         {
-            get { return _blockId; }
+            get { return BlockStats.BlockId; }
         }
 
         public long TargetSamplesForBGroup

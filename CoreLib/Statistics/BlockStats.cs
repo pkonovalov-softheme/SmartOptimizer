@@ -2,26 +2,21 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Timers;
-using Accord.Statistics.Testing;
-using CoreLib.Statistics;
 
-namespace CoreLib
+namespace CoreLib.Statistics
 {
     /// <summary>
     /// Class which contains block statistics info
     /// </summary>
     public sealed class BlockStats
     {
-        private readonly ConvertionObject _groupAConvertion = new ConvertionObject();
-        private readonly ConvertionObject _groupBConvertion = new ConvertionObject();
-
+        private ConvertionObject _groupAConvertion = new ConvertionObject();
+        private ConvertionObject _groupBConvertion = new ConvertionObject();
         private readonly int _blockId;
         private readonly object _blockStatsLock = new object();
-        private readonly TimeSpan _updatedTimeSpan = TimeSpan.FromSeconds(10);
+        private readonly TimeSpan _updatedTimeSpan = TimeSpan.FromSeconds(5);
         private readonly Timer _saveTimer = new Timer();
         /// <summary>
         /// ConvertionObject(value) for specific position(key)
@@ -31,11 +26,18 @@ namespace CoreLib
         public ConvertionObject GroupAConvertion
         {
             get { return _groupAConvertion; }
+            set { _groupAConvertion = value; }
         }
 
         public ConvertionObject GroupBConvertion
         {
             get { return _groupBConvertion; }
+            set { _groupBConvertion = value; }
+        }
+
+        public int BlockId
+        {
+            get { return _blockId; }
         }
 
 
@@ -64,68 +66,46 @@ namespace CoreLib
 
         private void SaveAndClear(object source, ElapsedEventArgs e)
         {
-            ConvertionObject groupAConvertion;
-            ConvertionObject groupBConvertion;
-            Dictionary<int, ConvertionObject> tempPositionsConvertion;
-
-            lock (_blockStatsLock)
+            try
             {
-                tempPositionsConvertion = PositionsConvertion;
-                PositionsConvertion = new Dictionary<int, ConvertionObject>();
+                ConvertionObject groupAConvertion;
+                ConvertionObject groupBConvertion;
+                Dictionary<int, ConvertionObject> tempPositionsConvertion;
 
-                groupAConvertion = _groupAConvertion;
-                _groupAConvertion.Views = 0;
-                _groupAConvertion.Clicks = 0;
-                _groupAConvertion.Value = 0;
-
-                groupBConvertion = _groupBConvertion;
-                _groupBConvertion.Views = 0;
-                _groupBConvertion.Clicks = 0;
-                _groupBConvertion.Value = 0;
-            }
-
-            string connectionString = "data source=localhost;initial catalog = BlockOptimizationStats;" +
-              " persist security info = True;Integrated Security = SSPI";
-
-            using (var connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-
-                var cmd = new SqlCommand(
-                           "INSERT INTO [Convertions]([a_views],[a_clicks],[a_value],[b_views],[b_clicks],[b_value],[InsertDate]," +
-                           "[BlockId] VALUES (@a_views, @a_clicks, @a_value, @b_views, @b_clicks, @b_value, @InsertDate)");
-
-                cmd.CommandType = CommandType.Text;
-                cmd.Connection = connection;
-                cmd.Parameters.AddWithValue("@a_views", groupAConvertion.Views);
-                cmd.Parameters.AddWithValue("@a_clicks", groupAConvertion.Clicks);
-                cmd.Parameters.AddWithValue("@a_value", groupAConvertion.Value);
-                cmd.Parameters.AddWithValue("@b_views", groupBConvertion.Views);
-                cmd.Parameters.AddWithValue("@b_clicks", groupBConvertion.Clicks);
-                cmd.Parameters.AddWithValue("@b_value", groupBConvertion.Value);
-                cmd.Parameters.AddWithValue("@BlockId", _blockId);
-
-                if (StageOptimizer.ChangeTimeSpeed)
+                lock (_blockStatsLock)
                 {
-                    cmd.Parameters.AddWithValue("@InsertDate", StageOptimizer.CurrentDate);
-                }
-                else
-                {
-                    cmd.Parameters.AddWithValue("@InsertDate", DateTime.Now);
+                    tempPositionsConvertion = PositionsConvertion;
+                    PositionsConvertion = new Dictionary<int, ConvertionObject>();
+
+                    groupAConvertion = _groupAConvertion;
+                    _groupAConvertion = new ConvertionObject();
+
+                    groupBConvertion = _groupBConvertion;
+                    _groupBConvertion.Views = 0;
+                    _groupBConvertion.Clicks = 0;
+                    _groupBConvertion.Value = 0;
                 }
 
-                foreach (var dictEntry in tempPositionsConvertion)
+                string connectionString = "data source=localhost;initial catalog = BlockOptimizationStats;" +
+                  " persist security info = True;Integrated Security = SSPI";
+
+                using (var connection = new SqlConnection(connectionString))
                 {
-                    cmd = new SqlCommand(
-                            "INSERT INTO [PositionsStats] (Position, BlockId, Views, Clicks, Value, InsertDate) VALUES (@Position," +
-                            "@BlockId, @Views, @Clicks, @Value, @InsertDate)");
+                    connection.Open();
+
+                    var cmd = new SqlCommand(
+                               "INSERT INTO [Convertions]([AGviews],[AGclicks],[AGvalue],[BGviews],[BGclicks],[BGvalue],[InsertDate]," +
+                               "[BlockId]) VALUES (@AGviews, @AGclicks, @AGvalue, @BGviews, @BGclicks, @BGvalue, @InsertDate, @BlockId)");
+
                     cmd.CommandType = CommandType.Text;
                     cmd.Connection = connection;
-                    cmd.Parameters.AddWithValue("@Position", dictEntry.Key);
+                    cmd.Parameters.AddWithValue("@AGviews", groupAConvertion.Views);
+                    cmd.Parameters.AddWithValue("@AGclicks", groupAConvertion.Clicks);
+                    cmd.Parameters.AddWithValue("@AGvalue", groupAConvertion.Value);
+                    cmd.Parameters.AddWithValue("@BGviews", groupBConvertion.Views);
+                    cmd.Parameters.AddWithValue("@BGclicks", groupBConvertion.Clicks);
+                    cmd.Parameters.AddWithValue("@BGvalue", groupBConvertion.Value);
                     cmd.Parameters.AddWithValue("@BlockId", _blockId);
-                    cmd.Parameters.AddWithValue("@Views", groupBConvertion.Views);
-                    cmd.Parameters.AddWithValue("@Clicks", dictEntry.Value.Clicks);
-                    cmd.Parameters.AddWithValue("@Value", dictEntry.Value.Value);
 
                     if (StageOptimizer.ChangeTimeSpeed)
                     {
@@ -137,9 +117,38 @@ namespace CoreLib
                     }
 
                     cmd.ExecuteNonQuery();
+
+                    foreach (var dictEntry in tempPositionsConvertion)
+                    {
+                        cmd = new SqlCommand(
+                                "INSERT INTO [PositionsStats] (Position, BlockId, Views, Clicks, Value, InsertDate) VALUES (@Position," +
+                                "@BlockId, @Views, @Clicks, @Value, @InsertDate)");
+                        cmd.CommandType = CommandType.Text;
+                        cmd.Connection = connection;
+                        cmd.Parameters.AddWithValue("@Position", dictEntry.Key);
+                        cmd.Parameters.AddWithValue("@BlockId", _blockId);
+                        cmd.Parameters.AddWithValue("@Views", groupBConvertion.Views);
+                        cmd.Parameters.AddWithValue("@Clicks", dictEntry.Value.Clicks);
+                        cmd.Parameters.AddWithValue("@Value", dictEntry.Value.Value);
+
+                        if (StageOptimizer.ChangeTimeSpeed)
+                        {
+                            cmd.Parameters.AddWithValue("@InsertDate", StageOptimizer.CurrentDate);
+                        }
+                        else
+                        {
+                            cmd.Parameters.AddWithValue("@InsertDate", DateTime.Now);
+                        }
+
+                        cmd.ExecuteNonQuery();
+                    }
                 }
             }
-
+            catch (Exception ex)
+            {
+                Utils.DbgBreak();
+                Trace.TraceError("SaveAndClear failed with exception: {0}", ex.Message);
+            }
         }
     }
 }

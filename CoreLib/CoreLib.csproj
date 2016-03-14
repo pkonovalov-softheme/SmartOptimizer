@@ -101,6 +101,7 @@
     <Compile Include="UserPreference.cs" />
     <Compile Include="UserPreferences.cs" />
     <Compile Include="UserSession.cs" />
+    <Compile Include="Utils.cs" />
     <Compile Include="WebSampleSizeCalculator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

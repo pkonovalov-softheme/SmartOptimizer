@@ -24,9 +24,7 @@ namespace CoreLib
         readonly MemoryCache _userSessionsCache = new MemoryCache("CachingProvider");
         readonly CacheItemPolicy _cachePolicy = new CacheItemPolicy() {SlidingExpiration = TimeSpan.FromMinutes(10)};
         readonly Dictionary<int, AdsBlock> _adsBlocks = new Dictionary<int, AdsBlock>();
-        private const bool StealthMode = true;
-        private readonly Dictionary<int, BlockStats> _blocksStats = new Dictionary<int, BlockStats>();
-
+        private const bool StealthMode = false;
         public const bool ChangeTimeSpeed = true;
         private readonly TimeSpan _timeOffset = TimeSpan.FromSeconds(1);
         public static DateTime CurrentDate { get; set; } = DateTime.Now;
@@ -52,7 +50,6 @@ namespace CoreLib
         {
             lock(_stupidLock)
             {
-                BlockStats blockStats = _blocksStats[blockId];
                 AdsBlock adsBlock;
                 try
                 {
@@ -70,17 +67,12 @@ namespace CoreLib
                     refsList = adsBlock.NextRandomShuffle().ToList();
                     isInBgroup = true;
 
-                    blockStats.GroupBConvertion.Views++;
+                    adsBlock.BlockStats.GroupBConvertion.Views++;
                 }
                 else
                 {
                     refsList = adsBlock.BaseRefsList;
-                    blockStats.GroupAConvertion.Views++;
-                }
-
-                if (!_blocksStats.ContainsKey(blockId))
-                {
-                    _blocksStats.Add(blockId, new BlockStats(blockId));
+                    adsBlock.BlockStats.GroupAConvertion.Views++;
                 }
 
                 var curSession = new UserSession(sessionId,
@@ -112,6 +104,8 @@ namespace CoreLib
                 }
 
                 UserSession session = (UserSession)_userSessionsCache[sessionId];
+                BlockStats blockStats = session.Block.BlockStats;
+
                 _userSessionsCache.Remove(sessionId);
 
                 if (finalLink == null)
@@ -125,28 +119,19 @@ namespace CoreLib
                     return;
                 }
 
-                session.Block.BlockId
                 if (session.InBGroup)
                 {
-                    _groupBConvertion.Clicks++;
-                    _groupBConvertion.Value += value;
+                    blockStats.GroupBConvertion.Clicks++;
+                    blockStats.GroupBConvertion.Value += value;
                 }
                 else
                 {
-                    _groupAConvertion.Clicks++;
-                    _groupAConvertion.Value += value;
+                    blockStats.GroupAConvertion.Clicks++;
+                    blockStats.GroupAConvertion.Value += value;
                 }
 
-                if (_blocksStats.ContainsKey(session.Block.BlockId))
-                {
-                    BlockStats stats = _blocksStats[session.Block.BlockId];
-                    int positionId = session.ShowedList.IndexOf(finalLink);
-                    stats.AddClick(positionId, value);
-                }
-                else
-                {
-                    Trace.TraceError("Block with id:{0} cannot be found in SetSessionResult", session.Block.BlockId);
-                }
+                int positionId = session.ShowedList.IndexOf(finalLink);
+                blockStats.AddClick(positionId, value);
 
                 if (session.InBGroup)
                 {
@@ -257,6 +242,6 @@ namespace CoreLib
         //        }
         //    }
 
-        }
+       
     }
 }
