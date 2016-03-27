@@ -5,6 +5,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Runtime.Caching;
 using System.Runtime.Caching.Configuration;
 using System.Text;
@@ -19,15 +20,34 @@ namespace CoreLib
     {
         private readonly object _stupidLock = new object();
         private readonly Random _rnd = new Random();
-        private const double GroupBRate = 0.8; //0.2
+        private const double GroupBRate = 0.2;
        // private AdsSet _currentAdsSet = new AdsSet(new List<string>());
         readonly MemoryCache _userSessionsCache = new MemoryCache("CachingProvider");
         readonly CacheItemPolicy _cachePolicy = new CacheItemPolicy() {SlidingExpiration = TimeSpan.FromMinutes(10)};
         readonly Dictionary<int, AdsBlock> _adsBlocks = new Dictionary<int, AdsBlock>();
-        private const bool StealthMode = false;
         public const bool ChangeTimeSpeed = true;
         private readonly TimeSpan _timeOffset = TimeSpan.FromSeconds(1);
         public static DateTime CurrentDate { get; set; } = DateTime.Now;
+        public const int BlockNotFoundErrorCode = 2277;
+
+        private OptimizationServiceSettings _optimizationServiceSettings = new OptimizationServiceSettings();
+
+        private bool StealthMode
+        {
+            get { return _optimizationServiceSettings.StealthMode; }
+        }
+
+        public OptimizationServiceSettings ServiceSettings
+        {
+            get { return _optimizationServiceSettings; }
+            set
+            {
+                lock (_stupidLock)
+                {
+                    _optimizationServiceSettings = value;
+                }
+            }
+        }
 
         public void AddOrUpdateBlock(int blockId, List<string> refsList)
         {
@@ -57,7 +77,7 @@ namespace CoreLib
                 }
                 catch (KeyNotFoundException)
                 {
-                    throw new InvalidOperationException("The is no added block with id: " + blockId);
+                    throw new InvalidOperationException(BlockNotFoundErrorCode.ToString());
                 }
 
                 bool isInBgroup = false;
@@ -68,6 +88,7 @@ namespace CoreLib
                     isInBgroup = true;
 
                     adsBlock.BlockStats.GroupBConvertion.Views++;
+                   // Trace.WriteLine("b.Views++");
                 }
                 else
                 {
@@ -128,6 +149,7 @@ namespace CoreLib
                 {
                     blockStats.GroupAConvertion.Clicks++;
                     blockStats.GroupAConvertion.Value += value;
+                   // Trace.WriteLine("b.Value++");
                 }
 
                 int positionId = session.ShowedList.IndexOf(finalLink);

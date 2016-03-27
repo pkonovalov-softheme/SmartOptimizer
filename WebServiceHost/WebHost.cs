@@ -29,11 +29,12 @@ namespace WebServiceHost
             endPoint.Behaviors.Add(webBehavior);
 
             ServiceHost serviceHost = new ServiceHost(typeof(BlocksOptimizationServices));
+
             serviceHost.AddServiceEndpoint(endPoint);
+
             serviceHost.Open();
             Trace.WriteLine("Service Host Started.");
             return new WebHost(serviceHost);
-
         }
 
         public void Stop()

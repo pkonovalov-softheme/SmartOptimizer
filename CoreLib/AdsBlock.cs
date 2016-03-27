@@ -28,7 +28,7 @@ namespace CoreLib
     public class AdsBlock
     {
         public BlockStats BlockStats { get; set; }
-        private const int TargetSamplesPerAd = 20; //ToDo: calculate // 8000 - 2%; 1000 -10% of erorrs; 800 - 15%; 400 - 20%; 
+        private const int TargetSamplesPerAd = 200; //ToDo: calculate // 8000 - 2%; 1000 -10% of erorrs; 800 - 15%; 400 - 20%; 
 
         private readonly int _blockId;
         private List<string> _baseRefsList;

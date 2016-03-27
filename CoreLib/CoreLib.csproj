@@ -83,6 +83,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -91,6 +92,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AdsBlock.cs" />
+    <Compile Include="OptimizationServiceSettings.cs" />
     <Compile Include="Statistics\AdStats.cs" />
     <Compile Include="Statistics\ConvertionObject.cs" />
     <Compile Include="Statistics\BlockStats.cs" />

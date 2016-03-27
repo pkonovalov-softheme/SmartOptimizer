@@ -81,9 +81,7 @@ namespace CoreLib.Statistics
                     _groupAConvertion = new ConvertionObject();
 
                     groupBConvertion = _groupBConvertion;
-                    _groupBConvertion.Views = 0;
-                    _groupBConvertion.Clicks = 0;
-                    _groupBConvertion.Value = 0;
+                    _groupBConvertion = new ConvertionObject();
                 }
 
                 string connectionString = "data source=localhost;initial catalog = BlockOptimizationStats;" +
@@ -107,6 +105,10 @@ namespace CoreLib.Statistics
                     cmd.Parameters.AddWithValue("@BGvalue", groupBConvertion.Value);
                     cmd.Parameters.AddWithValue("@BlockId", _blockId);
 
+                    if (groupBConvertion.Views == 0)
+                    {
+                        Utils.DbgBreak();
+                    }
                     if (StageOptimizer.ChangeTimeSpeed)
                     {
                         cmd.Parameters.AddWithValue("@InsertDate", StageOptimizer.CurrentDate);
