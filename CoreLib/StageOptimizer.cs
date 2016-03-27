@@ -21,10 +21,15 @@ namespace CoreLib
         private readonly object _stupidLock = new object();
         private readonly Random _rnd = new Random();
         private const double GroupBRate = 0.2;
-       // private AdsSet _currentAdsSet = new AdsSet(new List<string>());
-        readonly MemoryCache _userSessionsCache = new MemoryCache("CachingProvider");
-        readonly CacheItemPolicy _cachePolicy = new CacheItemPolicy() {SlidingExpiration = TimeSpan.FromMinutes(10)};
-        readonly Dictionary<int, AdsBlock> _adsBlocks = new Dictionary<int, AdsBlock>();
+        // private AdsSet _currentAdsSet = new AdsSet(new List<string>());
+        private readonly MemoryCache _userSessionsCache = new MemoryCache("CachingProvider");
+
+        private readonly CacheItemPolicy _cachePolicy = new CacheItemPolicy()
+        {
+            SlidingExpiration = TimeSpan.FromMinutes(10)
+        };
+
+        private readonly Dictionary<int, AdsBlock> _adsBlocks = new Dictionary<int, AdsBlock>();
         public const bool ChangeTimeSpeed = true;
         private readonly TimeSpan _timeOffset = TimeSpan.FromSeconds(1);
         public static DateTime CurrentDate { get; set; } = DateTime.Now;
@@ -54,10 +59,12 @@ namespace CoreLib
             if (_adsBlocks.ContainsKey(blockId))
             {
                 _adsBlocks[blockId] = new AdsBlock(blockId, refsList);
+                Trace.TraceInformation("Block with id:{0} was updated.", blockId);
             }
             else
             {
                 _adsBlocks.Add(blockId, new AdsBlock(blockId, refsList));
+                Trace.TraceInformation("Block with id:{0} was added.", blockId);
             }
         }
 
@@ -68,7 +75,7 @@ namespace CoreLib
 
         public List<string> GetDataPositions(int blockId, string userId, string sessionId)
         {
-            lock(_stupidLock)
+            lock (_stupidLock)
             {
                 AdsBlock adsBlock;
                 try
@@ -77,6 +84,7 @@ namespace CoreLib
                 }
                 catch (KeyNotFoundException)
                 {
+                    Trace.TraceInformation("Block with id:{0} was not found.", blockId);
                     throw new InvalidOperationException(BlockNotFoundErrorCode.ToString());
                 }
 
@@ -88,7 +96,7 @@ namespace CoreLib
                     isInBgroup = true;
 
                     adsBlock.BlockStats.GroupBConvertion.Views++;
-                   // Trace.WriteLine("b.Views++");
+                    // Trace.TraceInformation("b.Views++");
                 }
                 else
                 {
@@ -97,11 +105,11 @@ namespace CoreLib
                 }
 
                 var curSession = new UserSession(sessionId,
-                     userId,
-                     null,
-                     isInBgroup,
-                     adsBlock,
-                     refsList);
+                    userId,
+                    null,
+                    isInBgroup,
+                    adsBlock,
+                    refsList);
 
                 _userSessionsCache.Add(curSession.Id, curSession, _cachePolicy);
 
@@ -124,7 +132,7 @@ namespace CoreLib
                     return;
                 }
 
-                UserSession session = (UserSession)_userSessionsCache[sessionId];
+                UserSession session = (UserSession) _userSessionsCache[sessionId];
                 BlockStats blockStats = session.Block.BlockStats;
 
                 _userSessionsCache.Remove(sessionId);
@@ -149,7 +157,7 @@ namespace CoreLib
                 {
                     blockStats.GroupAConvertion.Clicks++;
                     blockStats.GroupAConvertion.Value += value;
-                   // Trace.WriteLine("b.Value++");
+                    // Trace.TraceInformation("b.Value++");
                 }
 
                 int positionId = session.ShowedList.IndexOf(finalLink);
@@ -172,98 +180,5 @@ namespace CoreLib
             bool result = curVal < GroupBRate;
             return result;
         }
-
-
-        //private void SaveAndClear(object source, ElapsedEventArgs e)
-        //{
-        //    string connectionString = "data source=localhost;initial catalog = BlockOptimizationStats;" +
-        //                              " persist security info = True;Integrated Security = SSPI";
-
-        //    //Dictionary<int, ConvertionObject> tempPositionsConvertion;
-        //    ConvertionObject groupAConvertion;
-        //    ConvertionObject groupBConvertion;
-        //    Dictionary<int, BlockStats> tempStats;
-
-        //    lock (_stupidLock)
-        //    {
-        //        tempStats = _blocksStats;
-        //        _blocksStats = new Dictionary<int, BlockStats>();
-
-        //        groupAConvertion = _groupAConvertion;
-        //        _groupAConvertion.Views = 0;
-        //        _groupAConvertion.Clicks = 0;
-        //        _groupAConvertion.Value = 0;
-
-        //        groupBConvertion = _groupBConvertion;
-        //        _groupBConvertion.Views = 0;
-        //        _groupBConvertion.Clicks = 0;
-        //        _groupBConvertion.Value = 0;
-        //    }
-
-        //    using (var connection = new SqlConnection(connectionString))
-        //    {
-        //        connection.Open();
-
-        //            var cmd = new SqlCommand(
-        //                    "INSERT INTO [Convertions]([a_views],[a_clicks],[a_value],[b_views],[b_clicks],[b_value],[InsertDate]," +
-        //                    "[BlockId] VALUES (@a_views, @a_clicks, @a_value, @b_views, @b_clicks, @b_value, @InsertDate)");
-
-        //            cmd.CommandType = CommandType.Text;
-        //            cmd.Connection = connection;
-        //            cmd.Parameters.AddWithValue("@a_views", groupAConvertion.Views);
-        //            cmd.Parameters.AddWithValue("@a_clicks", groupAConvertion.Clicks);
-        //            cmd.Parameters.AddWithValue("@a_value", groupAConvertion.Value);
-        //            cmd.Parameters.AddWithValue("@b_views", groupBConvertion.Views);
-        //            cmd.Parameters.AddWithValue("@b_clicks", groupBConvertion.Clicks);
-        //            cmd.Parameters.AddWithValue("@b_value", groupBConvertion.Value);
-        //            cmd.Parameters.AddWithValue("@BlockId", blockId);
-
-        //        if (StageOptimizer.ChangeTimeSpeed)
-        //            {
-        //                cmd.Parameters.AddWithValue("@InsertDate", StageOptimizer.CurrentDate);
-        //            }
-        //            else
-        //            {
-        //                cmd.Parameters.AddWithValue("@InsertDate", DateTime.Now);
-        //            }
-        //    }
-
-        //    foreach (var blockStatEntry in tempStats)
-        //    {
-        //        BlockStats blockStat = blockStatEntry.Value;
-        //        int blockId = blockStatEntry.Key;
-        //       // AdsBlock block = _adsBlocks[blockId];
-        //        using (var connection = new SqlConnection(connectionString))
-        //        {
-        //            connection.Open();
-
-        //            foreach (var dictEntry in blockStat.PositionsConvertion)
-        //            {
-        //                SqlCommand cmd =
-        //                    new SqlCommand(
-        //                        "INSERT INTO [Convertions] (Position, BlockId, Views, Clicks, Value, InsertDate) VALUES (@Position, @BlockId, @Views, @Clicks, @Value, @InsertDate)");
-        //                cmd.CommandType = CommandType.Text;
-        //                cmd.Connection = connection;
-        //                cmd.Parameters.AddWithValue("@Position", dictEntry.Key);
-        //                cmd.Parameters.AddWithValue("@BlockId", blockId);
-        //                cmd.Parameters.AddWithValue("@Views", groupBConvertion.Views);
-        //                cmd.Parameters.AddWithValue("@Clicks", dictEntry.Value.Clicks);
-        //                cmd.Parameters.AddWithValue("@Value", dictEntry.Value.Value);
-
-        //                if (StageOptimizer.ChangeTimeSpeed)
-        //                {
-        //                    cmd.Parameters.AddWithValue("@InsertDate", StageOptimizer.CurrentDate);
-        //                }
-        //                else
-        //                {
-        //                    cmd.Parameters.AddWithValue("@InsertDate", DateTime.Now);
-        //                }
-
-        //                cmd.ExecuteNonQuery();
-        //            }
-        //        }
-        //    }
-
-       
     }
 }

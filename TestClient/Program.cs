@@ -102,8 +102,8 @@ namespace TestClient
             });
 
             watch.Stop();
-            double speed = (double) testCount/watch.ElapsedMilliseconds;
-            Console.WriteLine("Avg speed: {0} requests per ms", speed);
+            double speed = (double) watch.ElapsedMilliseconds/ testCount;
+            Console.WriteLine("Avg speed: {0} ms for request", speed);
         }
 
         private static void SetSettings()

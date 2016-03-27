@@ -22,6 +22,7 @@ namespace WebServiceHost
 
         public static WebHost StartHost()
         {
+            Trace.TraceInformation("Starting host..");
             WebHttpBinding binding = new WebHttpBinding(WebHttpSecurityMode.None);
             ServiceEndpoint endPoint = new ServiceEndpoint(ContractDescription.GetContract(typeof(BlocksOptimizationServices)),
             binding, new EndpointAddress(WebHostAdress));
@@ -33,13 +34,13 @@ namespace WebServiceHost
             serviceHost.AddServiceEndpoint(endPoint);
 
             serviceHost.Open();
-            Trace.WriteLine("Service Host Started.");
+            Trace.TraceInformation("Service Host Started.");
             return new WebHost(serviceHost);
         }
 
         public void Stop()
         {
-            Trace.WriteLine("Stoping Service Host...");
+            Trace.TraceInformation("Stoping Service Host...");
             _host.Close();
         }
 

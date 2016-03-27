@@ -17,19 +17,20 @@ namespace CoreService
         private WebHost _host;
         public CoreService()
         {
+            Trace.TraceInformation("Creating service components..");
             InitializeComponent();
         }
 
         protected override void OnStart(string[] args)
         {
-            Trace.WriteLine("Block optimisation service started");
             _host = WebHost.StartHost();
+            Trace.TraceInformation("Block optimisation service started");
         }
 
         protected override void OnStop()
         {
             _host.Stop();
-            Trace.WriteLine("Block optimisation service stoped");
+            Trace.TraceInformation("Block optimisation service stoped");
         }
     }
 }

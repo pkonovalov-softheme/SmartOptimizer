@@ -107,16 +107,28 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="InstallAndRun.cmd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="CoreService.resx">
+      <DependentUpon>CoreService.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ProjectInstaller.resx">
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="TextFile1.txt" />
+    <Content Include="ReadMe.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CoreLib\CoreLib.csproj">
+      <Project>{00414065-e153-4258-9100-0eac7b19a711}</Project>
+      <Name>CoreLib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\WebServiceHost\WebServiceHost.csproj">
       <Project>{af3364b2-6ae1-4720-972e-7c7403c36ee3}</Project>
       <Name>WebServiceHost</Name>
@@ -127,7 +139,12 @@
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
-  <Target Name="AfterBuild">
-  </Target>
   -->
+  <Target Name="AfterBuild">
+    <ItemGroup>
+      <MySourceFiles Include="$(OutputPath)\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(MySourceFiles)" DestinationFolder="$(SolutionDir)\package">
+    </Copy>
+  </Target>
 </Project>

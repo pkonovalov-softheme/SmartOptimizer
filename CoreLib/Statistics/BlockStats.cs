@@ -84,6 +84,8 @@ namespace CoreLib.Statistics
                     _groupBConvertion = new ConvertionObject();
                 }
 
+                Trace.TraceInformation("Saving stats to SQL DB...");
+
                 string connectionString = "data source=localhost;initial catalog = BlockOptimizationStats;" +
                   " persist security info = True;Integrated Security = SSPI";
 

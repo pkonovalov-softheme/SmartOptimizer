@@ -27,7 +27,7 @@ namespace WebServiceHost
         {
             try
             {
-                Trace.WriteLine($"GetDataPositions called. blockId:{blockId}, sessionId:{sessionId}.");
+                Trace.TraceInformation($"GetDataPositions called. blockId:{blockId}, sessionId:{sessionId}.");
                 return _stageOptimizer.GetDataPositions(blockId, userId, sessionId);
             }
             catch (InvalidOperationException ex)
@@ -60,7 +60,7 @@ namespace WebServiceHost
         {
             try
             {
-                Trace.WriteLine($"SetSessionResult called. sessionId:{sessionId}, clicked link:{finalLink}.");
+                Trace.TraceInformation($"SetSessionResult called. sessionId:{sessionId}, clicked link:{finalLink}.");
                 _stageOptimizer.SetSessionResult(sessionId, finalLink, value);
             }
             catch (Exception ex)
@@ -81,7 +81,7 @@ namespace WebServiceHost
         {
             try
             {
-                Trace.WriteLine($"AddOrUpdateBlock called. Block id:{blockId} has been changed.");
+                Trace.TraceInformation($"AddOrUpdateBlock called. Block id:{blockId} has been changed.");
                 _stageOptimizer.AddOrUpdateBlock(blockId, refsList);
             }
             catch (Exception ex)
@@ -116,8 +116,9 @@ namespace WebServiceHost
         [WebInvoke(Method = "POST", UriTemplate = "SetSettings", BodyStyle = WebMessageBodyStyle.WrappedRequest, 
            ResponseFormat = WebMessageFormat.Json, RequestFormat = WebMessageFormat.Json)]
         [OperationContract]
-        public void SetSettings(Boolean stealthMode)
+        public void SetSettings(bool stealthMode)
         {
+            Trace.TraceInformation("Changing StealthMode from {0} to {1}.", _stageOptimizer.ServiceSettings.StealthMode, stealthMode);
             _stageOptimizer.ServiceSettings.StealthMode = stealthMode;
         }
     }

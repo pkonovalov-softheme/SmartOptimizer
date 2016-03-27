@@ -129,6 +129,8 @@ namespace CoreLib
                 stat.ClicksCount = 0;
                 stat.TotalValue = 0;
             }
+
+            Trace.TraceInformation("Competition was fineshed. Block id:{0}", BlockId);
         }
     }
 }

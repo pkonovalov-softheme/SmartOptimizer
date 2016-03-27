@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Net;
@@ -15,11 +16,12 @@ namespace SmUI
 {
     public partial class MainForm : Form
     {
-        private const int refreshIntervalMs = 30000;
+        private const int RefreshIntervalMs = 30000;
         private readonly object _lock = new object();
         private bool _stealthMode = false;
         private bool _isOnline = false;
         private DateTime _lastSendedEmail = DateTime.MinValue;
+        private readonly TimeSpan _maxTimeToProcess = TimeSpan.FromMilliseconds(50);
 
         static System.Windows.Forms.Timer _refreshTimer = new System.Windows.Forms.Timer();
 
@@ -32,7 +34,7 @@ namespace SmUI
         {
             UpdateFormValues();
             _refreshTimer.Tick += RefreshTimerEventProcessor;
-            _refreshTimer.Interval = refreshIntervalMs;
+            _refreshTimer.Interval = RefreshIntervalMs;
             _refreshTimer.Start();
         }
 
@@ -43,10 +45,11 @@ namespace SmUI
 
         private void UpdateFormValues()
         {
-            OptimizationServiceSettings settings;
-
             lock (_lock)
             {
+                OptimizationServiceSettings settings;
+                Stopwatch watch = Stopwatch.StartNew();
+
                 try
                 {
                     settings = WebServiceWrapper.GetSettings();
@@ -57,12 +60,24 @@ namespace SmUI
                     return;
                 }
 
+                watch.Stop();
                 _stealthMode = settings.StealthMode;
                 _isOnline = true;
 
                 StealthModeBtn.Text = settings.StealthMode ? "Enable Optimization" : "Stealth Mode";
-                IsOnlineValue.Text = "true";
                 StealthModeBtn.Enabled = true;
+
+                if (watch.Elapsed > _maxTimeToProcess)
+                {
+                    IsOnlineValue.Text = "true, but slow";
+                    string msg = string.Format("Sevice is Slow! Response time: {0} ms.", watch.ElapsedMilliseconds);
+                    Trace.TraceWarning(msg);
+                    SendEmail(msg);
+                }
+                else
+                {
+                    IsOnlineValue.Text = "true";
+                }
             }
         }
 
@@ -72,7 +87,9 @@ namespace SmUI
             StealthModeBtn.Text = "Invalid State";
             StealthModeBtn.Enabled = false;
             _isOnline = false;
-            SendEmail();
+            string msg = "Sevice is not available!";
+            SendEmail(msg);
+            Trace.TraceWarning(msg);
         }
 
         private void StealthModeBtn_Click(object sender, EventArgs e)
@@ -95,9 +112,10 @@ namespace SmUI
             }
         }
 
-        private void SendEmail()
+        private void SendEmail(string text)
         {
-            if (DateTime.Now - _lastSendedEmail < TimeSpan.FromMinutes(30))
+            const int minEmailResendIntervalMin = 30;
+            if (DateTime.Now - _lastSendedEmail < TimeSpan.FromMinutes(minEmailResendIntervalMin))
             {
                 return;
             }
@@ -107,8 +125,8 @@ namespace SmUI
                 var fromAddress = new MailAddress("thesnarb@gmail.com", "From Name");
                 var toAddress = new MailAddress("pavel.konovalov@softheme.com", "To Name");
                 const string fromPassword = "lmzziwxvnifygzay";
-                const string subject = "Sevice is not available!";
-                const string body = "Sevice is not available!";
+                string subject = text;
+                string body = text;
 
                 var smtp = new SmtpClient
                 {
@@ -133,7 +151,6 @@ namespace SmUI
                 
                 MessageBox.Show("Failed to send e-mail: " + ex.Message);
             }
-
 
             _lastSendedEmail = DateTime.Now;
             
