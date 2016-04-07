@@ -15,7 +15,7 @@ namespace CoreService
         /// </summary>
         static void Main()
         {
-            Trace.TraceInformation("Starting Block optimisation service...");
+            Trace.TraceInformation("Starting Block optimization service...");
 
             var servicesToRun = new ServiceBase[]
             {

@@ -24,13 +24,13 @@ namespace CoreService
         protected override void OnStart(string[] args)
         {
             _host = WebHost.StartHost();
-            Trace.TraceInformation("Block optimisation service started");
+            Trace.TraceInformation("Block optimization service started");
         }
 
         protected override void OnStop()
         {
             _host.Stop();
-            Trace.TraceInformation("Block optimisation service stoped");
+            Trace.TraceInformation("Block optimization service stoped");
         }
     }
 }

@@ -54,6 +54,11 @@ namespace CoreLib
             }
         }
 
+        public MemoryCache UserSessionsCache
+        {
+            get { return _userSessionsCache; }
+        }
+
         public void AddOrUpdateBlock(int blockId, List<string> refsList)
         {
             if (_adsBlocks.ContainsKey(blockId))
@@ -129,6 +134,7 @@ namespace CoreLib
                 if (!_userSessionsCache.Contains(sessionId))
                 {
                     Trace.TraceWarning("Session with id: {0} not found in the list of started sessions.", sessionId);
+                    Utils.DbgBreak();
                     return;
                 }
 
@@ -140,11 +146,7 @@ namespace CoreLib
                 if (finalLink == null)
                 {
                     Trace.TraceWarning("Session with id: {0} ended with null finalLink.", sessionId);
-                    if (Debugger.IsAttached)
-                    {
-                        Debugger.Break();
-                    }
-
+                    Utils.DbgBreak();
                     return;
                 }
 

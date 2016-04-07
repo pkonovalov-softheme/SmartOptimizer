@@ -27,7 +27,7 @@ namespace WebServiceHost
         {
             try
             {
-                Trace.TraceInformation($"GetDataPositions called. blockId:{blockId}, sessionId:{sessionId}.");
+                //Trace.TraceInformation($"GetDataPositions called. blockId:{blockId}, sessionId:{sessionId}.");
                 return _stageOptimizer.GetDataPositions(blockId, userId, sessionId);
             }
             catch (InvalidOperationException ex)
@@ -35,7 +35,7 @@ namespace WebServiceHost
                 if (string.Equals(ex.Message, StageOptimizer.BlockNotFoundErrorCode.ToString(),
                     StringComparison.InvariantCultureIgnoreCase))
                 {
-                    throw new WebFaultException<string>(ex.Message, HttpStatusCode.NotFound);
+                    throw new WebFaultException<string>(ex.Message, HttpStatusCode.NotAcceptable);
                 }
 
                 throw;
@@ -60,7 +60,7 @@ namespace WebServiceHost
         {
             try
             {
-                Trace.TraceInformation($"SetSessionResult called. sessionId:{sessionId}, clicked link:{finalLink}.");
+                //Trace.TraceInformation($"SetSessionResult called. sessionId:{sessionId}, clicked link:{finalLink}.");
                 _stageOptimizer.SetSessionResult(sessionId, finalLink, value);
             }
             catch (Exception ex)

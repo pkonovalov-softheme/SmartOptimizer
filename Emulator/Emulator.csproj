@@ -85,7 +85,7 @@
     <Compile Include="Ad.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SystemTester.cs" />
+    <Compile Include="BasicTester.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

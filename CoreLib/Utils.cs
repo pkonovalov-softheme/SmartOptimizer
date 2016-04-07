@@ -11,6 +11,8 @@ namespace CoreLib
 {
     public static class Utils
     {
+        private static readonly Random Rng = new Random();
+
         public static void DbgBreak()
         {
             if (Debugger.IsAttached)
@@ -37,6 +39,11 @@ namespace CoreLib
                 serializer.WriteObject(ms, data);
                 return Encoding.Default.GetString(ms.ToArray());
             }
+        }
+
+        public static IEnumerable<string> Shuffle(IEnumerable<string> toShuffle)
+        {
+            return toShuffle.OrderBy(x => Rng.Next());
         }
     }
 }

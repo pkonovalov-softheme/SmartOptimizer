@@ -118,7 +118,7 @@
       <MySourceFiles Include="$(OutputPath)\*.*"/>
     </ItemGroup>
 
-    <Copy SourceFiles="@(MySourceFiles)" DestinationFolder="$(SolutionDir)\package"></Copy>
+    <Copy SourceFiles="@(MySourceFiles)" DestinationFolder="$(SolutionDir)\package\$(Configuration)"></Copy>
   </Target>
   
 </Project>

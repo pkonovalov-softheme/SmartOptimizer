@@ -22,6 +22,7 @@ namespace SmUI
         private bool _isOnline = false;
         private DateTime _lastSendedEmail = DateTime.MinValue;
         private readonly TimeSpan _maxTimeToProcess = TimeSpan.FromMilliseconds(50);
+        private bool _isFirstCheck = true;
 
         static System.Windows.Forms.Timer _refreshTimer = new System.Windows.Forms.Timer();
 
@@ -61,13 +62,8 @@ namespace SmUI
                 }
 
                 watch.Stop();
-                _stealthMode = settings.StealthMode;
-                _isOnline = true;
 
-                StealthModeBtn.Text = settings.StealthMode ? "Enable Optimization" : "Stealth Mode";
-                StealthModeBtn.Enabled = true;
-
-                if (watch.Elapsed > _maxTimeToProcess)
+                if (watch.Elapsed > _maxTimeToProcess && !_isFirstCheck)
                 {
                     IsOnlineValue.Text = "true, but slow";
                     string msg = string.Format("Sevice is Slow! Response time: {0} ms.", watch.ElapsedMilliseconds);
@@ -78,6 +74,13 @@ namespace SmUI
                 {
                     IsOnlineValue.Text = "true";
                 }
+
+                _stealthMode = settings.StealthMode;
+                _isOnline = true;
+
+                StealthModeBtn.Text = settings.StealthMode ? "Enable Optimization" : "Stealth Mode";
+                StealthModeBtn.Enabled = true;
+                _isFirstCheck = false;
             }
         }
 

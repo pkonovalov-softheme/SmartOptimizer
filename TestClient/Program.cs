@@ -16,6 +16,9 @@ namespace TestClient
 {
     internal class Program
     {
+        //212.26.136.125
+        private const string BasePath = "http://212.26.136.125:8080/BlocksOptimizationServices/";
+
         private static void Main(string[] args)
         {
             AddBlock();
@@ -47,8 +50,7 @@ namespace TestClient
                 }
 
                 jsonInput += "]}";
-                var response = client.UploadString("http://localhost:8080/BlocksOptimizationServices/block/update",
-                    "PUT", jsonInput);
+                var response = client.UploadString(BasePath + "block/update", "PUT", jsonInput);
             }
         }
 
@@ -97,7 +99,7 @@ namespace TestClient
             Parallel.For(0, testCount, po, index =>
             {
                 WebClient client = clients[(int) index];
-                var response = client.UploadString("http://localhost:8080/BlocksOptimizationServices/dataPositions",
+                var response = client.UploadString(BasePath + "dataPositions",
                     "POST", jsonInput);
             });
 
@@ -117,7 +119,7 @@ namespace TestClient
             var client = new WebClient();
             client.Headers["Content-type"] = "application/json";
             client.Encoding = Encoding.UTF8;
-            var response = client.UploadString("http://localhost:8080/BlocksOptimizationServices/SetSettings", "POST", jsonInput);
+            var response = client.UploadString(BasePath + "SetSettings", "POST", jsonInput);
         }
 
         private static void GetSettings()
@@ -126,7 +128,7 @@ namespace TestClient
             var client = new WebClient();
             client.Headers["Content-type"] = "application/json";
             client.Encoding = Encoding.UTF8;
-            var response = client.UploadString("http://localhost:8080/BlocksOptimizationServices/GetSettings", "POST", jsonInput);
+            var response = client.UploadString(BasePath + "GetSettings", "POST", jsonInput);
 
             if (!string.IsNullOrEmpty(response))
             {

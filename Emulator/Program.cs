@@ -30,8 +30,10 @@ namespace Emulator
             //}
 
 
-            SystemTester tester = new SystemTester();
-            tester.TestlPerfomanceWithBigAdsCount();
+            //  BasicTester tester = new BasicTester();
+            // tester.TestProfit();
+            FullChaineTester tester = new FullChaineTester();
+            tester.TestFullChaine();
         }
     }
 }

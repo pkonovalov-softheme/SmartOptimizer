@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -27,7 +28,11 @@ namespace SmUI
             var client = new WebClient();
             client.Headers["Content-type"] = "application/json";
             client.Encoding = Encoding.UTF8;
+
+            Stopwatch watch = Stopwatch.StartNew();
             var response = client.UploadString("http://localhost:8080/BlocksOptimizationServices/GetSettings", "POST", jsonInput);
+            watch.Stop();
+            var t = watch.ElapsedMilliseconds;
 
             if (string.IsNullOrEmpty(response))
             {
