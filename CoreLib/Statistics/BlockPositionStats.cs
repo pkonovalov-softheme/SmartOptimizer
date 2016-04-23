@@ -10,9 +10,9 @@ namespace CoreLib.Statistics
     /// <summary>
     /// Class which contains block statistics info
     /// </summary>
-    public sealed class BlockStats
+    public sealed class BlockPositionStats
     {
-        const string connectionString = "data source=localhost;initial catalog = BlockOptimizationStats; persist security info = True;Integrated Security = SSPI";
+        const string ConnectionString = "data source=localhost;initial catalog = BlockOptimizationStats; persist security info = True;Integrated Security = SSPI";
 
         private ConvertionObject _groupAConvertion = new ConvertionObject();
         private ConvertionObject _groupBConvertion = new ConvertionObject();
@@ -20,7 +20,7 @@ namespace CoreLib.Statistics
         private readonly object _blockStatsLock = new object();
         private readonly TimeSpan _updatedTimeSpan = TimeSpan.FromSeconds(5);
         private readonly Timer _saveTimer = new Timer();
-        private SqlConnection _connection = new SqlConnection(connectionString);
+        private static readonly SqlConnection Connection = new SqlConnection(ConnectionString);
 
         /// <summary>
         /// ConvertionObject(value) for specific position(key)
@@ -45,7 +45,7 @@ namespace CoreLib.Statistics
         }
 
 
-        public BlockStats(int blockId)
+        public BlockPositionStats(int blockId)
         {
             _blockId = blockId;
             PositionsConvertion = new Dictionary<int, ConvertionObject>();
@@ -53,14 +53,17 @@ namespace CoreLib.Statistics
             _saveTimer.Interval = _updatedTimeSpan.TotalMilliseconds;
             _saveTimer.Enabled = true;
 
-            try
+            if (Connection.State != ConnectionState.Open)
             {
-                _connection.Open();
-            }
-            catch (Exception ex)
-            {
-                Utils.DbgBreak();
-                Trace.TraceError("Open connection failed with exception: {0}", ex.Message);
+                try
+                {
+                    Connection.Open();
+                }
+                catch (Exception ex)
+                {
+                    Utils.DbgBreak();
+                    Trace.TraceError("Open connection failed with exception: {0}", ex.Message);
+                }
             }
         }
 
@@ -106,7 +109,7 @@ namespace CoreLib.Statistics
                             "[BlockId]) VALUES (@AGviews, @AGclicks, @AGvalue, @BGviews, @BGclicks, @BGvalue, @InsertDate, @BlockId)");
 
                 cmd.CommandType = CommandType.Text;
-                cmd.Connection = _connection;
+                cmd.Connection = Connection;
                 cmd.Parameters.AddWithValue("@AGviews", groupAConvertion.Views);
                 cmd.Parameters.AddWithValue("@AGclicks", groupAConvertion.Clicks);
                 cmd.Parameters.AddWithValue("@AGvalue", groupAConvertion.Value);
@@ -136,7 +139,7 @@ namespace CoreLib.Statistics
                             "INSERT INTO [PositionsStats] (Position, BlockId, Views, Clicks, Value, InsertDate) VALUES (@Position," +
                             "@BlockId, @Views, @Clicks, @Value, @InsertDate)");
                     cmd.CommandType = CommandType.Text;
-                    cmd.Connection = _connection;
+                    cmd.Connection = Connection;
                     cmd.Parameters.AddWithValue("@Position", dictEntry.Key);
                     cmd.Parameters.AddWithValue("@BlockId", _blockId);
                     cmd.Parameters.AddWithValue("@Views", groupBConvertion.Views);

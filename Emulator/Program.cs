@@ -32,6 +32,16 @@ namespace Emulator
 
             //  BasicTester tester = new BasicTester();
             // tester.TestProfit();
+
+            for (int i = 0; i < 5; i++)
+            {
+                TestIt();
+                Console.WriteLine("================================================/n");
+            }
+        }
+
+        static void TestIt()
+        {
             FullChaineTester tester = new FullChaineTester();
             tester.TestFullChaine();
         }

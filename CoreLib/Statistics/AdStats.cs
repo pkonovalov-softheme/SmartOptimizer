@@ -1,26 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 
-namespace CoreLib
+namespace CoreLib.Statistics
 {
     public class AdStats
     {
         public AdStats()
         {
-            ClicksCount = 0;
-            TotalValue = 0;
-            //Views = 0;
+            ConvObject = new ConvertionObject();
         }
 
-        public long Views { get; set; }
+        public long Views
+        {
+            get
+            {
+                return ConvObject.Views;
+            }
 
-        public long TotalValue { get; set; }
+            set
+            {
+                ConvObject.Views = value;
+            }
+        }
 
-        public long ClicksCount { get; set; }
+        public long Value
+        {
+            get
+            {
+                return ConvObject.Value;
+            }
 
-        public Dictionary<int, long> PositionsViews { get; set; } // <position, views>
+            set
+            {
+                ConvObject.Value = value;
+            }
+        }
+
+        public long Clicks
+        {
+            get
+            {
+                return ConvObject.Clicks;
+            }
+
+            set
+            {
+                ConvObject.Clicks = value;
+            }
+        }
+
+        public ConvertionObject ConvObject { get; private set; }
     }
 }

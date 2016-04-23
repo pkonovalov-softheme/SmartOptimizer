@@ -125,7 +125,7 @@ namespace SmUI
 
             try
             {
-                var fromAddress = new MailAddress("thesnarb@gmail.com", "From Name");
+                var fromAddress = new MailAddress("thesnarb@gmail.com", "Pokupon");
                 var toAddress = new MailAddress("pavel.konovalov@softheme.com", "To Name");
                 const string fromPassword = "lmzziwxvnifygzay";
                 string subject = text;

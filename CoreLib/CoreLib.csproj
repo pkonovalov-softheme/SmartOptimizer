@@ -95,7 +95,7 @@
     <Compile Include="OptimizationServiceSettings.cs" />
     <Compile Include="Statistics\AdStats.cs" />
     <Compile Include="Statistics\ConvertionObject.cs" />
-    <Compile Include="Statistics\BlockStats.cs" />
+    <Compile Include="Statistics\BlockPositionStats.cs" />
     <Compile Include="OptimizationTartget.cs" />
     <Compile Include="Stage.cs" />
     <Compile Include="StageOptimizer.cs" />

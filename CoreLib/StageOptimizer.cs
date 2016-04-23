@@ -21,6 +21,7 @@ namespace CoreLib
         private readonly object _stupidLock = new object();
         private readonly Random _rnd = new Random();
         private const double GroupBRate = 0.2;
+
         // private AdsSet _currentAdsSet = new AdsSet(new List<string>());
         private readonly MemoryCache _userSessionsCache = new MemoryCache("CachingProvider");
 
@@ -63,7 +64,32 @@ namespace CoreLib
         {
             if (_adsBlocks.ContainsKey(blockId))
             {
-                _adsBlocks[blockId] = new AdsBlock(blockId, refsList);
+                AdsBlock block = _adsBlocks[blockId];
+
+                IEnumerable<string> newAds = refsList.Where(item => !block.BaseRefsList.Contains(item));
+                Trace.TraceInformation("There are:{0} new ads.", newAds.Count());
+                AdsBlock curBlock = _adsBlocks[blockId];
+
+                Dictionary<string, AdStats> newRefStats = new Dictionary<string, AdStats>();
+
+                IEnumerable<double> valuesPerView = curBlock.RefPerfomanceStats.Values.Select(stat => stat.ConvObject.CurrentValuePerView);
+                double maxEf = valuesPerView.Max();
+                double minEf = valuesPerView.Min();
+
+
+                foreach (string curRef in refsList)
+                {
+                    AdStats curStats = curBlock.RefPerfomanceStats.SingleOrDefault(ps => ps.Key == curRef).Value;
+                    var newAdStats = new AdStats();
+                    newAdStats.ConvObject.CurrentValuePerView = _rnd.NextDouble(minEf, maxEf);
+
+                    newRefStats.Add(curRef, curStats ?? new AdStats());
+
+                    List<string> optimizedRefList = block.RefPerfomanceStats.OrderByDescending(de => de.Value.ConvObject.CurrentValuePerView).Select(de => de.Key).ToList();
+                    block.BaseRefsList = optimizedRefList;
+                }
+
+                curBlock.UpdateBlock(refsList, newRefStats);
                 Trace.TraceInformation("Block with id:{0} was updated.", blockId);
             }
             else
@@ -100,13 +126,12 @@ namespace CoreLib
                     refsList = adsBlock.NextRandomShuffle().ToList();
                     isInBgroup = true;
 
-                    adsBlock.BlockStats.GroupBConvertion.Views++;
-                    // Trace.TraceInformation("b.Views++");
+                    adsBlock.BlockPositionStats.GroupBConvertion.Views++;
                 }
                 else
                 {
                     refsList = adsBlock.BaseRefsList;
-                    adsBlock.BlockStats.GroupAConvertion.Views++;
+                    adsBlock.BlockPositionStats.GroupAConvertion.Views++;
                 }
 
                 var curSession = new UserSession(sessionId,
@@ -139,7 +164,7 @@ namespace CoreLib
                 }
 
                 UserSession session = (UserSession) _userSessionsCache[sessionId];
-                BlockStats blockStats = session.Block.BlockStats;
+                BlockPositionStats blockPositionStats = session.Block.BlockPositionStats;
 
                 _userSessionsCache.Remove(sessionId);
 
@@ -152,18 +177,17 @@ namespace CoreLib
 
                 if (session.InBGroup)
                 {
-                    blockStats.GroupBConvertion.Clicks++;
-                    blockStats.GroupBConvertion.Value += value;
+                    blockPositionStats.GroupBConvertion.Clicks++;
+                    blockPositionStats.GroupBConvertion.Value += value;
                 }
                 else
                 {
-                    blockStats.GroupAConvertion.Clicks++;
-                    blockStats.GroupAConvertion.Value += value;
-                    // Trace.TraceInformation("b.Value++");
+                    blockPositionStats.GroupAConvertion.Clicks++;
+                    blockPositionStats.GroupAConvertion.Value += value;
                 }
 
                 int positionId = session.ShowedList.IndexOf(finalLink);
-                blockStats.AddClick(positionId, value);
+                blockPositionStats.AddClick(positionId, value);
 
                 if (session.InBGroup)
                 {
