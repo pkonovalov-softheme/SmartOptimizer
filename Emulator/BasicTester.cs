@@ -24,7 +24,7 @@ namespace Emulator
         private List<Ad> _correctAdsList;
         private long _failedCount = 0;
         private long _correctCount = 0;
-        private Random _rnd = new Random();
+        private ThreadSafeRandom _rnd = new ThreadSafeRandom();
         private bool _shouldExit = false;
         const double NextPosMoveProbability = 0.6;
         const int ProfitRetestCount = 300000;
@@ -64,7 +64,7 @@ namespace Emulator
             {
                 List<Ad> ads = GenerateAds(200, 0, 0.3);
                 TestPerfomance(ads);
-                _rnd = new Random();
+                _rnd = new ThreadSafeRandom();
             }
 
 
@@ -174,7 +174,7 @@ namespace Emulator
         {
             int testPassed;
             const int adsBlockId = 0;
-            const long testCount = 10000000;
+            const long testCount = 1000000;
             Stopwatch stopwatch = Stopwatch.StartNew();
 
             _correctAdsList = ads.OrderByDescending(x => x.ClickProbability).ToList();
@@ -251,16 +251,16 @@ namespace Emulator
 
     class FullChaineTester
     {
-        private const int StartAdsCount = 100;
+        private const int StartAdsCount = 20;
         private const double MinAddEf = 0.0;
         private const double MaxAddEf = 0.3;
-        private const long TotalTestsCount = 500000;
-        private const long TestsBetweenChanges = TotalTestsCount / 20;
+        private const long TotalTestsCount = 400000;
+        private const long TestsBetweenChanges = TotalTestsCount / 5;
         private const double NextPosMoveProbability = 0.6;
 
         private double _breakProbability = 1d / TestsBetweenChanges;
 
-        private readonly Random _rnd = new Random();
+        private readonly ThreadSafeRandom _rnd = new ThreadSafeRandom();
         private readonly List<Ad> _ads;
         private List<Ad> _correctAdsList;
         private long _maxProfit = 0;
@@ -291,7 +291,7 @@ namespace Emulator
             UpdateCorrectAdsList();
         }
 
-        public void TestFullChaine()
+        public TestingResult TestFullChaine()
         {
             for (int i = 0; i < TotalTestsCount; i++)
             {
@@ -330,13 +330,15 @@ namespace Emulator
                 }
             }
 
-            Console.WriteLine("Real: {0}.  Rnd: {1}. Max {2}.", _realProfit, _rndProfit, _maxProfit);
+            //Console.WriteLine("Real: {0}.  Rnd: {1}. Max {2}.", _realProfit, _rndProfit, _maxProfit);
 
-            double proc = (_maxProfit - _realProfit)/(double)_maxProfit;
-            Console.WriteLine("Real is smaller then max on {0}. ", proc.ToString("0.##%"));
+            //double proc = (_maxProfit - _realProfit)/(double)_maxProfit;
+            //Console.WriteLine("Real is smaller then max on {0}. ", proc.ToString("0.##%"));
 
-            double rndProc = (_maxProfit - _rndProfit) / (double)_maxProfit;
-            Console.WriteLine("Rnd is smaller then max on {0}. ", rndProc.ToString("0.##%"));
+            //double rndProc = (_maxProfit - _rndProfit) / (double)_maxProfit;
+            //Console.WriteLine("Rnd is smaller then max on {0}. ", rndProc.ToString("0.##%"));
+
+            return new TestingResult(_maxProfit, _rndProfit, _realProfit);
         }
 
         private string GetClickedLink(IEnumerable<string> refsList, Guid sessionId)
@@ -366,7 +368,6 @@ namespace Emulator
         {
             _correctAdsList = _ads.OrderByDescending(x => x.ClickProbability).ToList();
             _maxRefsList = _correctAdsList.Select(ca => ca.CurrentRef).ToList();
-
         }
     }
 }

@@ -21,6 +21,7 @@ namespace CoreLib.Statistics
         private readonly TimeSpan _updatedTimeSpan = TimeSpan.FromSeconds(5);
         private readonly Timer _saveTimer = new Timer();
         private static readonly SqlConnection Connection = new SqlConnection(ConnectionString);
+        private const bool SaveStats = false;
 
         /// <summary>
         /// ConvertionObject(value) for specific position(key)
@@ -49,21 +50,29 @@ namespace CoreLib.Statistics
         {
             _blockId = blockId;
             PositionsConvertion = new Dictionary<int, ConvertionObject>();
-            _saveTimer.Elapsed += SaveAndClear;
-            _saveTimer.Interval = _updatedTimeSpan.TotalMilliseconds;
-            _saveTimer.Enabled = true;
 
-            if (Connection.State != ConnectionState.Open)
+            if (SaveStats)
             {
-                try
+                _saveTimer.Elapsed += SaveAndClear;
+                _saveTimer.Interval = _updatedTimeSpan.TotalMilliseconds;
+                _saveTimer.Enabled = true;
+
+                if (Connection.State != ConnectionState.Open)
                 {
-                    Connection.Open();
+                    try
+                    {
+                        Connection.Open();
+                    }
+                    catch (Exception ex)
+                    {
+                        Utils.DbgBreak();
+                        Trace.TraceError("Open connection failed with exception: {0}", ex.Message);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    Utils.DbgBreak();
-                    Trace.TraceError("Open connection failed with exception: {0}", ex.Message);
-                }
+            }
+            else
+            {
+                Trace.TraceWarning("Statistics saving is disabled!");
             }
         }
 

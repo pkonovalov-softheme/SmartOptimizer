@@ -28,13 +28,13 @@ namespace CoreLib
     public class AdsBlock
     {
         public BlockPositionStats BlockPositionStats { get; set; }
-        private const int TargetSamplesPerAd = 200; //ToDo: calculate // 8000 - 2%; 1000 -10% of erorrs; 800 - 15%; 400 - 20%; 
+        private const int TargetSamplesPerAd = 400; //ToDo: calculate // 8000 - 2%; 1000 -10% of erorrs; 800 - 15%; 400 - 20%; 
 
         private readonly int _blockId;
         private List<string> _baseRefsList;
         //private List<string> _prevRefsList;
         private readonly long _targetSamplesForBGroup;
-        private static readonly Random Rnd = new Random();
+        private readonly ThreadSafeRandom Rnd = new ThreadSafeRandom();
         private Dictionary<string, AdStats> _refPerfomanceStats;
         private static long _missedSessions = 0;
         private long _startedSessionsInBGroup;
@@ -133,9 +133,8 @@ namespace CoreLib
             OnCompetitionFinished(EventArgs.Empty);
 
             _startedSessionsInBGroup = 0;
-            foreach (var key in _refPerfomanceStats.Keys.ToList())
+            foreach (AdStats stat in _refPerfomanceStats.Values)
             {
-                AdStats stat = _refPerfomanceStats[key];
                 stat.Views = BlockPositionStats.GroupBConvertion.Views;
                 stat.ConvObject.NextStage();
             }

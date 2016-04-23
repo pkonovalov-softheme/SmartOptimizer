@@ -19,7 +19,7 @@ namespace CoreLib
     public class StageOptimizer
     {
         private readonly object _stupidLock = new object();
-        private readonly Random _rnd = new Random();
+        private readonly ThreadSafeRandom _rnd = new ThreadSafeRandom();
         private const double GroupBRate = 0.2;
 
         // private AdsSet _currentAdsSet = new AdsSet(new List<string>());
@@ -81,7 +81,11 @@ namespace CoreLib
                 {
                     AdStats curStats = curBlock.RefPerfomanceStats.SingleOrDefault(ps => ps.Key == curRef).Value;
                     var newAdStats = new AdStats();
-                    newAdStats.ConvObject.CurrentValuePerView = _rnd.NextDouble(minEf, maxEf);
+
+                    //  newAdStats.ConvObject.CurrentValuePerView = GetRandomNumber(minEf, maxEf); - avg random
+
+                    double avg = (maxEf - minEf) / 2; // - shifted for new values up to 50%
+                    newAdStats.ConvObject.CurrentValuePerView = _rnd.NextDouble(avg, maxEf);
 
                     newRefStats.Add(curRef, curStats ?? new AdStats());
 

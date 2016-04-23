@@ -100,6 +100,7 @@
     <Compile Include="Stage.cs" />
     <Compile Include="StageOptimizer.cs" />
     <Compile Include="Statistics\PositionsStats.cs" />
+    <Compile Include="ThreadSafeRandom.cs" />
     <Compile Include="UserPreference.cs" />
     <Compile Include="UserPreferences.cs" />
     <Compile Include="UserSession.cs" />

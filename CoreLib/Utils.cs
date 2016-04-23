@@ -11,7 +11,7 @@ namespace CoreLib
 {
     public static class Utils
     {
-        private static readonly Random Rng = new Random();
+        private static readonly ThreadSafeRandom Rng = new ThreadSafeRandom();
 
         public static void DbgBreak()
         {
