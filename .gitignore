@@ -2,4 +2,13 @@ Debug
 bin
 obj
 /SmartOptimizer/bin
+package/**
+package/*/*
 package
+/.vs/SmartOptimizer/v14/*.suo
+sl4-windowsphone71
+net40
+/packages/Microsoft.Net.Http.2.2.29/lib/win8/*.dll
+portable-net40+sl4+win8+wp71+wpa81
+/*.sdf
+/*.opendb
