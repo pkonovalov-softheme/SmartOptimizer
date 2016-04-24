@@ -20,7 +20,6 @@ namespace CoreLib
     {
         private readonly object _stupidLock = new object();
         private readonly ThreadSafeRandom _rnd = new ThreadSafeRandom();
-        private const double GroupBRate = 0.2;
 
         // private AdsSet _currentAdsSet = new AdsSet(new List<string>());
         private readonly MemoryCache _userSessionsCache = new MemoryCache("CachingProvider");
@@ -31,7 +30,6 @@ namespace CoreLib
         };
 
         private readonly Dictionary<int, AdsBlock> _adsBlocks = new Dictionary<int, AdsBlock>();
-        public const bool ChangeTimeSpeed = true;
         private readonly TimeSpan _timeOffset = TimeSpan.FromSeconds(1);
         public static DateTime CurrentDate { get; set; } = DateTime.Now;
         public const int BlockNotFoundErrorCode = 2277;
@@ -58,6 +56,11 @@ namespace CoreLib
         public MemoryCache UserSessionsCache
         {
             get { return _userSessionsCache; }
+        }
+
+        public bool ChangeTimeSpeed
+        {
+            get { return GeneralSettings.ChangeTimeSpeed; }
         }
 
         public void AddOrUpdateBlock(int blockId, List<string> refsList)
@@ -147,7 +150,7 @@ namespace CoreLib
 
                 _userSessionsCache.Add(curSession.Id, curSession, _cachePolicy);
 
-                if (ChangeTimeSpeed)
+                if (GeneralSettings.ChangeTimeSpeed)
                 {
                     CurrentDate += _timeOffset;
                 }
@@ -207,7 +210,7 @@ namespace CoreLib
         private bool ShouldAddUserToBGroup()
         {
             double curVal = _rnd.NextDouble();
-            bool result = curVal < GroupBRate;
+            bool result = curVal < GeneralSettings.GroupBRate;
             return result;
         }
     }

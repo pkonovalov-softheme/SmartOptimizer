@@ -92,6 +92,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AdsBlock.cs" />
+    <Compile Include="GeneralSettings.cs" />
     <Compile Include="OptimizationServiceSettings.cs" />
     <Compile Include="Statistics\AdStats.cs" />
     <Compile Include="Statistics\ConvertionObject.cs" />

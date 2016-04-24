@@ -8,26 +8,13 @@ using CoreLib;
 
 namespace Emulator
 {
-    public static class RandomExtensions
-    {
-        public static double NextDouble(
-            this Random random,
-            double minValue,
-            double maxValue)
-        {
-            return random.NextDouble() * (maxValue - minValue) + minValue;
-        }
-    }
-
     class BasicTester
     {
         private List<Ad> _correctAdsList;
         private long _failedCount = 0;
         private long _correctCount = 0;
-        private ThreadSafeRandom _rnd = new ThreadSafeRandom();
         private bool _shouldExit = false;
-        const double NextPosMoveProbability = 0.6;
-        const int ProfitRetestCount = 300000;
+        private ThreadSafeRandom _rnd = new ThreadSafeRandom();
         private long _maxAbsProfit = 0;
         private long _realProfit = 0;
         private long _rndProfit = 0;
@@ -137,7 +124,7 @@ namespace Emulator
         private long CalculateAdsBlockMaxProfit(List<Ad> adsList)
         {
             long profit = 0;
-            for (long i = 0; i < ProfitRetestCount; i++)
+            for (long i = 0; i < TestSettings.ProfitRetestCount; i++)
             {
                 foreach (Ad add in adsList)
                 {
@@ -149,7 +136,7 @@ namespace Emulator
                     }
 
                     curRnd = _rnd.NextDouble();
-                    if (curRnd > NextPosMoveProbability)
+                    if (curRnd > TestSettings.NextPosMoveProbability)
                     {
                         break;
                     }
@@ -179,7 +166,7 @@ namespace Emulator
 
             _correctAdsList = ads.OrderByDescending(x => x.ClickProbability).ToList();
 
-            StageOptimizer stageOptimizer = new StageOptimizer();
+            var stageOptimizer = new StageOptimizer();
             List<string> refs = ads.Select(ad => ad.CurrentRef).ToList();
             stageOptimizer.AddOrUpdateBlock(adsBlockId, refs);
 
@@ -213,7 +200,7 @@ namespace Emulator
                     }
 
                     curRnd = _rnd.NextDouble();
-                    if (curRnd > NextPosMoveProbability)
+                    if (curRnd > TestSettings.NextPosMoveProbability)
                     {
                         break;
                     }
@@ -251,14 +238,10 @@ namespace Emulator
 
     class FullChaineTester
     {
-        private const int StartAdsCount = 20;
-        private const double MinAddEf = 0.0;
-        private const double MaxAddEf = 0.3;
-        private const long TotalTestsCount = 400000;
-        private const long TestsBetweenChanges = TotalTestsCount / 5;
-        private const double NextPosMoveProbability = 0.6;
 
-        private double _breakProbability = 1d / TestsBetweenChanges;
+
+
+        private double _breakProbability = 1d /TestSettings.TestsBetweenChanges;
 
         private readonly ThreadSafeRandom _rnd = new ThreadSafeRandom();
         private readonly List<Ad> _ads;
@@ -270,6 +253,7 @@ namespace Emulator
         private List<string> _maxRefsList;
         private readonly StageOptimizer _stageOptimizer = new StageOptimizer();
         const int AdsBlockId = 0;
+
         private List<Ad> GenerateAds(int count, double minValue, double maxValue)
         {
             List<Ad> result = new List<Ad>();
@@ -286,20 +270,20 @@ namespace Emulator
 
         public FullChaineTester()
         {
-            _ads = GenerateAds(StartAdsCount, MinAddEf, MaxAddEf);
+            _ads = GenerateAds(TestSettings.StartAdsCount, TestSettings.MinAddEf, TestSettings.MaxAddEf);
             _stageOptimizer.AddOrUpdateBlock(AdsBlockId, _ads.Select(ad => ad.CurrentRef).ToList());
             UpdateCorrectAdsList();
         }
 
         public TestingResult TestFullChaine()
         {
-            for (int i = 0; i < TotalTestsCount; i++)
+            for (int i = 0; i < TestSettings.TotalTestsCount; i++)
             {
                 double val = _rnd.NextDouble();
                 if (val < _breakProbability)
                 {
                     int indexToChange = _rnd.Next(0, _ads.Count);
-                    double eff = _rnd.NextDouble(MinAddEf, MaxAddEf);
+                    double eff = _rnd.NextDouble(TestSettings.MinAddEf, TestSettings.MaxAddEf);
                     string name = Guid.NewGuid() + ".ref";
                     _ads[indexToChange] = new Ad(name, eff);
                     _stageOptimizer.AddOrUpdateBlock(AdsBlockId, _ads.Select(ad => ad.CurrentRef).ToList());
@@ -309,8 +293,8 @@ namespace Emulator
                 Guid userId = Guid.NewGuid();
                 Guid sessionId = Guid.NewGuid();
                 List<string> refsList = _stageOptimizer.GetDataPositions(AdsBlockId, userId.ToString(), sessionId.ToString());
-                string clickedLink = GetClickedLink(refsList, sessionId);
 
+                string clickedLink = GetClickedLink(refsList, sessionId);
                 if (clickedLink != null)
                 {
                     _realProfit += 1;
@@ -341,6 +325,28 @@ namespace Emulator
             return new TestingResult(_maxProfit, _rndProfit, _realProfit);
         }
 
+        private long CalCulateProfitFast(IEnumerable<string> adsList, long runCount)
+        {
+            double prob = 0;
+            foreach (string adStr in adsList)
+            {
+                Ad ad = _ads.Single(curAd => curAd.CurrentRef == adStr);
+
+                if (prob == 0)
+                {
+                    prob = ad.ClickProbability;
+                }
+                else
+                {
+                    prob += (ad.ClickProbability * TestSettings.NextPosMoveProbability);
+                }
+            }
+
+            long formulaProfit = (long)(prob * runCount);
+
+            return formulaProfit;
+        }
+
         private string GetClickedLink(IEnumerable<string> refsList, Guid sessionId)
         {
             string clickedRef = null;
@@ -355,7 +361,7 @@ namespace Emulator
                 }
 
                 curRnd = _rnd.NextDouble();
-                if (curRnd > NextPosMoveProbability)
+                if (curRnd > TestSettings.NextPosMoveProbability)
                 {
                     break;
                 }

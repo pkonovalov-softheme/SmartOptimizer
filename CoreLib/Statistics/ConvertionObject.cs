@@ -8,8 +8,6 @@ namespace CoreLib.Statistics
 {
     public sealed class ConvertionObject
     {
-        private const double SmoothingParameter = 0.3;
-
         public long Views { get; set; }
 
         public long Clicks { get; set; }
@@ -50,7 +48,7 @@ namespace CoreLib.Statistics
         // Simple low-pass filter
         private double LowPass(double current, double last)
         {
-            return last * (1.0d - SmoothingParameter) + current * SmoothingParameter;
+            return last * (1.0d - GeneralSettings.SmoothingParameter) + current *GeneralSettings.SmoothingParameter;
         }
     }
 }

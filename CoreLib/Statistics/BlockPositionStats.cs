@@ -21,7 +21,6 @@ namespace CoreLib.Statistics
         private readonly TimeSpan _updatedTimeSpan = TimeSpan.FromSeconds(5);
         private readonly Timer _saveTimer = new Timer();
         private static readonly SqlConnection Connection = new SqlConnection(ConnectionString);
-        private const bool SaveStats = false;
 
         /// <summary>
         /// ConvertionObject(value) for specific position(key)
@@ -51,7 +50,7 @@ namespace CoreLib.Statistics
             _blockId = blockId;
             PositionsConvertion = new Dictionary<int, ConvertionObject>();
 
-            if (SaveStats)
+            if (GeneralSettings.SaveStats)
             {
                 _saveTimer.Elapsed += SaveAndClear;
                 _saveTimer.Interval = _updatedTimeSpan.TotalMilliseconds;
@@ -131,7 +130,8 @@ namespace CoreLib.Statistics
                 {
                     Utils.DbgBreak();
                 }
-                if (StageOptimizer.ChangeTimeSpeed)
+
+                if (GeneralSettings.ChangeTimeSpeed)
                 {
                     cmd.Parameters.AddWithValue("@InsertDate", StageOptimizer.CurrentDate);
                 }
@@ -155,7 +155,7 @@ namespace CoreLib.Statistics
                     cmd.Parameters.AddWithValue("@Clicks", dictEntry.Value.Clicks);
                     cmd.Parameters.AddWithValue("@Value", dictEntry.Value.Value);
 
-                    if (StageOptimizer.ChangeTimeSpeed)
+                    if (GeneralSettings.ChangeTimeSpeed)
                     {
                         cmd.Parameters.AddWithValue("@InsertDate", StageOptimizer.CurrentDate);
                     }

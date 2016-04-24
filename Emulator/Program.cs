@@ -42,9 +42,6 @@ namespace Emulator
 
         static void TestIt()
         {
-            FullChaineTester tester1 = new FullChaineTester();
-            TestingResult result1 = tester1.TestFullChaine();
-
             int testsCount = Environment.ProcessorCount;
 
             var results = new ConcurrentBag<TestingResult>();
